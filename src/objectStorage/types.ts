@@ -1,0 +1,55 @@
+export type StorageProvider = 'oss' | 'obs' | 'tos';
+
+export interface StorageSource {
+  provider: StorageProvider;
+  bucket: string;
+  region: string;
+  endpoint: string;
+  prefix: string;
+}
+
+export interface StorageCredentials {
+  accessKeyId: string;
+  accessKeySecret: string;
+  securityToken?: string;
+}
+
+export type StorageConnection = StorageSource & StorageCredentials;
+export interface SavedStorageConnection {
+  id: string;
+  name: string;
+  connection: StorageConnection;
+  createdAt: number;
+  updatedAt: number;
+}
+export interface StorageObject {
+  key: string;
+  size: number;
+  lastModified?: string;
+}
+export interface StoragePage {
+  objects: StorageObject[];
+  directories: string[];
+  nextCursor?: string;
+}
+export interface StorageListOptions {
+  prefix: string;
+  delimiter?: string;
+  cursor?: string;
+}
+export interface StorageClient {
+  list(options: StorageListOptions): Promise<StoragePage>;
+  signedURL(key: string): Promise<string>;
+  put?(key: string, body: Blob): Promise<void>;
+}
+
+export const providerLabels: Record<StorageProvider, string> = {
+  oss: '阿里云 OSS',
+  obs: '华为云 OBS',
+  tos: '火山引擎 TOS',
+};
+export const defaultRegions: Record<StorageProvider, string> = {
+  oss: 'cn-hangzhou',
+  obs: 'cn-north-4',
+  tos: 'cn-beijing',
+};

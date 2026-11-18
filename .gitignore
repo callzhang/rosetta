@@ -1,0 +1,4 @@
+node_modules/
+dist/
+public/rosetta-annotation/
+.env.local
