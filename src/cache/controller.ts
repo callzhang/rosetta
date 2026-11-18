@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { downloadAnnotationInput } from './download';
 import { saveCachedInput } from './storage';
@@ -76,7 +77,7 @@ export class CacheController {
       if (!abort.signal.aborted)
         update({
           status: 'error',
-          error: error instanceof Error ? error.message : '缓存失败',
+          error: error instanceof Error ? error.message : t('Cache failed'),
         });
       return null;
     } finally {

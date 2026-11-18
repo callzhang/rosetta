@@ -1,3 +1,5 @@
+import { LanguageSelect } from '../../LanguageProvider';
+import { useLanguage, t } from '../../i18n';
 import {
   AppstoreOutlined,
   ArrowLeftOutlined,
@@ -40,6 +42,7 @@ export default function TaskLayout({
   contentClassName?: string;
   onStartNew?: () => void;
 }) {
+  useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,9 +53,9 @@ export default function TaskLayout({
     !task &&
     (location.pathname === '/' || location.pathname === '/annotationTool');
   const labels = {
-    overview: '任务详情',
-    configuration: '标注工具',
-    results: '标注结果',
+    overview: t('Task details'),
+    configuration: t('Annotation tools'),
+    results: t('Annotation results'),
   };
   async function leave(to: string) {
     if (leaving) return;
@@ -62,7 +65,7 @@ export default function TaskLayout({
       setMenuOpen(false);
       navigate(to);
     } catch (error) {
-      message.error((error as Error).message || '保存失败，请重试');
+      message.error((error as Error).message || t('Save failed. Try again'));
     } finally {
       setLeaving(false);
     }
@@ -104,7 +107,7 @@ export default function TaskLayout({
     {
       title: (
         <Link to="/" onClick={(event) => follow(event, '/')}>
-          开始标注
+          {t('Start annotating')}
         </Link>
       ),
     },
@@ -124,25 +127,25 @@ export default function TaskLayout({
           { title: labels[section] },
         ]
       : inSources
-      ? [{ title: '数据源' }]
+      ? [{ title: t('Data sources') }]
       : inExports
-      ? [{ title: '导出设置' }]
+      ? [{ title: t('Export settings') }]
       : inQuickStart
       ? []
-      : [{ title: '任务管理' }]),
+      : [{ title: t('Task management') }]),
   ];
   return (
     <div className="workspace-shell">
       {menuOpen && (
         <button
           className="workspace-menu-overlay"
-          aria-label="关闭菜单"
+          aria-label={t('Close menu')}
           onClick={() => setMenuOpen(false)}
         />
       )}
       <aside
         className={`workspace-sidebar${menuOpen ? ' is-open' : ''}`}
-        aria-label="工作区菜单"
+        aria-label={t('Workspace menu')}
       >
         <Link
           className="workspace-brand"
@@ -150,42 +153,57 @@ export default function TaskLayout({
           onClick={(event) => follow(event, '/')}
         >
           <img src={logo} alt="STARDUST" />
-          <span>独立标注工具</span>
+          <span>{t('Standalone annotation tool')}</span>
         </Link>
-        <div className="workspace-nav-label">工作区</div>
-        <nav aria-label="功能模块">
-          {item('/', '开始标注', <ThunderboltOutlined />, inQuickStart)}
+        <div className="workspace-nav-label">{t('Workspace')}</div>
+        <nav aria-label={t('Modules')}>
+          {item(
+            '/',
+            t('Start annotating'),
+            <ThunderboltOutlined />,
+            inQuickStart,
+          )}
           {item(
             '/tasks',
-            '任务管理',
+            t('Task management'),
             <AppstoreOutlined />,
             !inQuickStart && !inSources && !inExports,
           )}
-          {item('/dataSources', '数据源', <CloudServerOutlined />, inSources)}
-          {item('/exportSettings', '导出设置', <ExportOutlined />, inExports)}
+          {item(
+            '/dataSources',
+            t('Data sources'),
+            <CloudServerOutlined />,
+            inSources,
+          )}
+          {item(
+            '/exportSettings',
+            t('Export settings'),
+            <ExportOutlined />,
+            inExports,
+          )}
         </nav>
         {task && (
           <div className="workspace-task-menu">
-            <div className="workspace-nav-label">当前任务</div>
+            <div className="workspace-nav-label">{t('Current task')}</div>
             <div className="workspace-current-task" title={task.name}>
               <span>{task.name}</span>
             </div>
-            <nav aria-label="当前任务菜单">
+            <nav aria-label={t('Current task menu')}>
               {item(
                 `/tasks/${task.id}`,
-                '任务详情',
+                t('Task details'),
                 <AppstoreOutlined />,
                 section === 'overview',
               )}
               {item(
                 `/annotationTool?task=${task.id}`,
-                '标注工具',
+                t('Annotation tools'),
                 <SettingOutlined />,
                 section === 'configuration',
               )}
               {item(
                 `/tasks/${task.id}?view=results`,
-                '标注结果',
+                t('Annotation results'),
                 <CheckSquareOutlined />,
                 section === 'results',
               )}
@@ -196,26 +214,28 @@ export default function TaskLayout({
               onClick={(event) => follow(event, '/tasks')}
             >
               <ArrowLeftOutlined />
-              返回任务列表
+              {t('Back to task list')}
             </Link>
           </div>
         )}
         <div className="workspace-local-status">
           <span className="workspace-status-dot" />
-          本机存储<small>数据保存在此浏览器</small>
+          {t('Local storage')}
+          <small>{t('Data is stored in this browser')}</small>
         </div>
       </aside>
       <div className="workspace-main">
         <header className="workspace-topbar">
           <Button
             className="workspace-menu-toggle"
-            aria-label="打开菜单"
+            aria-label={t('Open menu')}
             aria-expanded={menuOpen}
             icon={<MenuOutlined />}
             onClick={() => setMenuOpen(!menuOpen)}
           />
           <Breadcrumb items={crumbs} />
           <div className="workspace-topbar-actions">
+            <LanguageSelect />
             {actions}
             {task && (
               <Button
@@ -223,7 +243,7 @@ export default function TaskLayout({
                 loading={leaving}
                 onClick={() => leave('/tasks')}
               >
-                返回任务列表
+                {t('Back to task list')}
               </Button>
             )}
           </div>

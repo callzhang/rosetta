@@ -124,7 +124,7 @@ test('flat single-record annotation task management', async (t) => {
             },
           },
         ]),
-      /一条数据/,
+      /one (?:data )?item/i,
     );
     const many = {
       taskParams: {
@@ -135,9 +135,9 @@ test('flat single-record annotation task management', async (t) => {
     };
     await assert.rejects(
       () => createTasks([{ name: 'many', input: many }]),
-      /一条数据/,
+      /one (?:data )?item/i,
     );
-    await assert.rejects(() => saveSession(many), /一条数据/);
+    await assert.rejects(() => saveSession(many), /one (?:data )?item/i);
     assert.equal((await listSessions()).length, before);
   });
   let ids: string[] = [];
@@ -162,7 +162,7 @@ test('flat single-record annotation task management', async (t) => {
             { name: 'valid', input: input() },
             { name: ' ', input: input() },
           ]),
-        /名称/,
+        /name/i,
       );
       assert.equal((await listSessions()).length, count);
     },
@@ -204,7 +204,7 @@ test('flat single-record annotation task management', async (t) => {
       assert.equal((await loadSession(ids[1])).status, 'pending');
       await assert.rejects(
         () => saveSessionResult(ids[0], result('wrong-index'), 1),
-        /位置/,
+        /location/i,
       );
     },
   );
@@ -231,7 +231,7 @@ test('flat single-record annotation task management', async (t) => {
             0,
             stale.contentRevision,
           ),
-        /更新/,
+        /changed/i,
       );
     },
   );
@@ -319,11 +319,11 @@ test('flat single-record annotation task management', async (t) => {
       );
       assert.throws(
         () => planLocalTasks([entries[0], entries[0]], 'file', false),
-        /重复/,
+        /Duplicate/i,
       );
       assert.throws(
         () => planLocalTasks(entries, 'file', false, 'other'),
-        /父文件夹/,
+        /parent folder/i,
       );
     },
   );
@@ -487,11 +487,11 @@ test('flat single-record annotation task management', async (t) => {
           saveSession(task.input, task.id, undefined, undefined, {
             requireExisting: true,
           }),
-        /删除/,
+        /deleted/i,
       );
       await assert.rejects(
         () => saveSessionResult(task.id, result('late'), 0),
-        /删除/,
+        /deleted/i,
       );
       assert.equal(
         (await listSessions()).some((item) => item.id === task.id),
@@ -516,7 +516,7 @@ test('flat single-record annotation task management', async (t) => {
       });
       await assert.rejects(
         () => saveConnection(connection, 'duplicate', { requireNew: true }),
-        /已有/,
+        /already/i,
       );
       await saveConnection(
         { ...connection, accessKeySecret: 'rotated-secret' },

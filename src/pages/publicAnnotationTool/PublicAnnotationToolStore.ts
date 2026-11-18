@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import {
   createEmptyAnnotationFromTaskParams,
   DataRecord,
@@ -138,7 +139,11 @@ export class PublicAnnotationToolStore {
       const count =
         data.taskParams.type === 'include' ? 1 : data.taskParams.records.length;
       if (count !== 1)
-        throw new Error('每条任务仅包含一条数据，批量数据请在任务列表中导入');
+        throw new Error(
+          t(
+            'Each task contains one data item. Import batches from the task list',
+          ),
+        );
     }
     if (!keepSession) {
       this.sessionId = undefined;
@@ -155,7 +160,11 @@ export class PublicAnnotationToolStore {
 
   assertImportCompatible(records: DataRecord[]) {
     if (this.managedTask && records.length !== 1)
-      throw new Error('每条任务仅包含一条数据，批量数据请在任务列表中导入');
+      throw new Error(
+        t(
+          'Each task contains one data item. Import batches from the task list',
+        ),
+      );
     const previousKind = kindFromRecord(this.records[0]);
     const kind = kindFromRecord(records[0]);
     if (
@@ -165,7 +174,11 @@ export class PublicAnnotationToolStore {
       previousKind &&
       kind !== previousKind
     )
-      throw new Error('当前数据类型不同，请返回任务列表另行导入这条数据。');
+      throw new Error(
+        t(
+          'This data has a different type. Return to the task list and import it separately.',
+        ),
+      );
   }
 
   @action setRecords(records: DataRecord[]) {
@@ -272,7 +285,7 @@ export class PublicAnnotationToolStore {
     const id = this.sessionId;
     const input = await this.getFinalInput();
     if (!input || (!this.records.length && !this.managedTask))
-      throw new Error('请先导入标注数据');
+      throw new Error(t('Import annotation data first'));
     return this.persistConfiguration(input, id, name);
   }
 
@@ -280,10 +293,13 @@ export class PublicAnnotationToolStore {
     const id = this.sessionId;
     const input = await this.getFinalInput();
     if (!input || !this.records.length)
-      throw new Error('数据尚未加载完成，已保留当前页面');
+      throw new Error(
+        t('Data has not finished loading. The current page was kept open'),
+      );
     if (!id) return this.quickSession.recover(input);
     await this.pendingWrite;
-    if (this.sessionId !== id) throw new Error('任务已切换，已停止自动退出');
+    if (this.sessionId !== id)
+      throw new Error(t('The task changed. Automatic exit was canceled'));
     const saved = await saveSessionConfigurationDraft(
       id,
       input,

@@ -1,11 +1,7 @@
+import { useLanguage, t } from '../../i18n';
 import { UploadOutlined } from '@ant-design/icons';
-import {
-  Button,
-  message,
-  validateSchema,
-} from '@stardustai/annotation-client';
+import { Button, message, validateSchema } from '@stardustai/annotation-client';
 import { Upload } from 'antd';
-import i18next from 'i18next';
 import { observer } from 'mobx-react';
 import {
   inputsFromJSON,
@@ -17,10 +13,13 @@ import type { PublicAnnotationToolStore } from './PublicAnnotationToolStore';
 
 export const SceneCase = observer(
   ({ store }: { store: PublicAnnotationToolStore }) => {
+    useLanguage();
     if (store.managedTask)
       return (
         <p className="task-editor-note">
-          当前任务包含一条数据。在此配置标注工具；添加或批量导入数据请返回任务列表。
+          {t(
+            'This task contains one data item. Configure annotation tools here; return to the task list to add or batch import data.',
+          )}
         </p>
       );
     async function importFile(file: File) {
@@ -40,20 +39,22 @@ export const SceneCase = observer(
           store.setData(input);
         }
       } catch (error) {
-        message.error(error instanceof Error ? error.message : '读取数据失败');
+        message.error(
+          error instanceof Error ? error.message : t('Failed to read data'),
+        );
       }
       return false as const;
     }
     function clear() {
       store.resetCustom();
-      message.info(i18next.t('已清空数据, 请重新上传。'));
+      message.info(t('Data cleared. Upload it again.'));
     }
     return (
       <>
         <LocalDataUpload store={store} />
         <CloudDataImport store={store} />
         <div className="flex items-center py-2 font-bold">
-          <span className="mr-4 min-w-16">{i18next.t('上传数据:')}</span>
+          <span className="mr-4 min-w-16">{t('Upload data:')}</span>
           <div className="flex flex-1">
             <Upload
               showUploadList
@@ -62,7 +63,7 @@ export const SceneCase = observer(
               onRemove={clear}
             >
               <Button icon={<UploadOutlined />}>
-                {i18next.t('上传 PublicAnnotationInput')}
+                {t('Upload PublicAnnotationInput')}
               </Button>
             </Upload>
             <Upload
@@ -73,9 +74,7 @@ export const SceneCase = observer(
               beforeUpload={importFile}
               onRemove={clear}
             >
-              <Button icon={<UploadOutlined />}>
-                {i18next.t('上传 JSONL')}
-              </Button>
+              <Button icon={<UploadOutlined />}>{t('Upload JSONL')}</Button>
             </Upload>
           </div>
         </div>

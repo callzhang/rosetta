@@ -1,5 +1,7 @@
+import { t } from '../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
-import { getPathWithBase, history } from '@stardustai/annotation-client';
+import { history } from '@stardustai/annotation-client';
+import { getPathWithBase } from '../navigation';
 import { prepareCredentialHandoff } from '../objectStorage/handoff';
 import { connectionProfiles } from '../objectStorage/registry';
 import type { QuickSessionState } from './quickSession';
@@ -25,12 +27,17 @@ export async function openAnnotationPreview(
 ) {
   const target = window.open('about:blank', '_blank');
   if (!target)
-    throw new Error('浏览器阻止了新页面，请允许本站打开弹出窗口后重试。');
+    throw new Error(
+      t(
+        'The browser blocked the new page. Allow pop-ups for this site and try again.',
+      ),
+    );
   let id: string;
   let cancelHandoff: (() => void) | undefined;
   try {
     const { input, index, quickSession } = await prepare();
-    if (target.closed) throw new Error('标注页面已关闭，请重新打开。');
+    if (target.closed)
+      throw new Error(t('The annotation page has closed. Open it again.'));
     const sources = connectionProfiles(input);
     const preview = await prepareAnnotationPreview(
       input,
@@ -39,7 +46,8 @@ export async function openAnnotationPreview(
       sources,
     );
     id = preview.id;
-    if (target.closed) throw new Error('标注页面已关闭，请重新打开。');
+    if (target.closed)
+      throw new Error(t('The annotation page has closed. Open it again.'));
     if (sources.length)
       cancelHandoff = prepareCredentialHandoff(target, id, sources);
     else target.opener = null;
@@ -77,7 +85,9 @@ export async function openSavedAnnotation(
 ) {
   const session = await loadSession(id);
   if (expectedRevision != null && expectedRevision !== session.contentRevision)
-    throw new Error('任务数据已更新，请刷新任务详情后重试。');
+    throw new Error(
+      t('The task data has changed. Refresh the task details and try again.'),
+    );
   if (index != null) await saveSessionIndex(id, index, session.contentRevision);
   navigateToSession(await startSession(id, session.contentRevision), target);
 }

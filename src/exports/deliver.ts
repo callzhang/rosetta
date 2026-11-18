@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { database } from '../localData/database';
 import type { SessionExport } from '../localData/export';
 import { downloadSessionExport } from '../localData/export';
@@ -19,7 +20,9 @@ function uploadError(error: any) {
     status === 409 ||
     /AlreadyExists|FileAlreadyExists|PreconditionFailed/.test(code)
   )
-    return '该导出文件已存在，请到对象存储确认结果；重新打开导出窗口可生成新文件名。';
+    return t(
+      'This export file already exists. Check object storage; reopen the export dialog to generate a new filename.',
+    );
   if (
     /ExpiredToken|InvalidToken|InvalidSecurityToken|SignatureDoesNotMatch|SignatureMismatch/i.test(
       code,
@@ -27,8 +30,12 @@ function uploadError(error: any) {
   )
     return storageError(error);
   if (status === 403 || /AccessDenied|InvalidAccessKeyId/i.test(code))
-    return '对象存储写入被拒绝，请检查凭证和目标目录的 PutObject 上传权限。';
-  return '对象存储导出失败，请检查网络、Endpoint、上传权限，以及允许本站 PUT 请求的 CORS 配置。';
+    return t(
+      'Object storage denied the upload. Check the credentials and PutObject permission for the destination directory.',
+    );
+  return t(
+    'Object storage export failed. Check the network, endpoint, upload permission, and CORS settings allowing PUT requests from this site.',
+  );
 }
 
 export async function deliverExport(
@@ -45,7 +52,7 @@ export async function deliverExport(
     return { method, location: payload.filename };
   }
   if (method === 'api') {
-    if (!settings.api) throw new Error('请先配置 API 导出地址');
+    if (!settings.api) throw new Error(t('Configure the API export URL first'));
     const target = normalizeApiTarget(settings.api);
     const url = apiExportURL(target.url, payload.taskId);
     const headers = new Headers(
@@ -69,14 +76,25 @@ export async function deliverExport(
       });
       if (!response.ok)
         throw new Error(
-          `API 导出失败：HTTP ${response.status}，请检查接口和鉴权配置`,
+          t(
+            'API export failed: HTTP {{v0}}. Check the endpoint and authentication settings',
+            { v0: response.status },
+          ),
         );
       return { method, location: url, status: response.status };
     } catch (error) {
       if (controller.signal.aborted)
-        throw new Error('API 请求超时，请确认接收端是否已收到数据后再重试');
+        throw new Error(
+          t(
+            'The API request timed out. Check whether the receiver received the data before retrying',
+          ),
+        );
       if ((error as Error).name === 'TypeError')
-        throw new Error('API 请求未完成，请检查地址、网络和接口的跨域配置');
+        throw new Error(
+          t(
+            'The API request did not complete. Check the URL, network, and CORS settings',
+          ),
+        );
       throw error;
     } finally {
       clearTimeout(timeout);
@@ -84,15 +102,22 @@ export async function deliverExport(
   }
   if (method === 'storage') {
     const target = settings.storage;
-    if (!target) throw new Error('请先配置对象存储导出目标');
+    if (!target)
+      throw new Error(
+        t('Configure the object storage export destination first'),
+      );
     const source = await (await database()).get('connections', target.sourceId);
-    if (!source) throw new Error('导出数据源已被删除，请重新配置');
+    if (!source)
+      throw new Error(
+        t('The export data source was deleted. Configure it again'),
+      );
     const key = `${exportPrefix(target.prefix)}${payload.objectFilename}`;
     try {
       const client = await (dependencies.createClient || createStorageClient)(
         source.connection,
       );
-      if (!client.put) throw new Error('该数据源不支持上传');
+      if (!client.put)
+        throw new Error(t('This data source does not support uploads'));
       await client.put(key, payload.blob);
     } catch (error) {
       throw new Error(uploadError(error));
@@ -106,5 +131,5 @@ export async function deliverExport(
       ),
     };
   }
-  throw new Error('不支持的导出方式');
+  throw new Error(t('Unsupported export method'));
 }

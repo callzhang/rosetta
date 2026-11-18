@@ -1,3 +1,4 @@
+import { useLanguage, getLanguage, t } from '../../../i18n';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -18,14 +19,13 @@ import {
   theme,
   Typography,
 } from 'antd';
-import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useCacheManager, type CacheItem } from '../hooks/useCacheManager';
 import { getDemoData } from '../demoData';
 
 const { Text } = Typography;
 
-// 优化的缓存列表项组件，避免不必要的重新渲染
+// Memoize cache list items to avoid unnecessary renders.
 const CacheListItem = React.memo<{
   item: CacheItem;
   getStatusColor: (status: CacheItem['status']) => string;
@@ -46,6 +46,7 @@ const CacheListItem = React.memo<{
     onDelete,
     token,
   }) => {
+    useLanguage();
     const isCompleted =
       item.status === 'success' || (item.size > 0 && item.status === 'idle');
     const isCaching = item.status === 'caching';
@@ -92,7 +93,7 @@ const CacheListItem = React.memo<{
                 )}
               </div>
 
-              {/* 缓存状态信息区域 */}
+              {/* Cache status information. */}
               <div>
                 {isCaching ? (
                   <div className="mb-0.5">
@@ -118,8 +119,8 @@ const CacheListItem = React.memo<{
                   </div>
                 ) : isCompleted ? (
                   <Text type="secondary" className="text-xs">
-                    {i18next.t('缓存时间')}:{' '}
-                    {new Date(item.timestamp).toLocaleString()}
+                    {t('Cached at')}:{' '}
+                    {new Date(item.timestamp).toLocaleString(getLanguage())}
                   </Text>
                 ) : null}
 
@@ -141,7 +142,7 @@ const CacheListItem = React.memo<{
                 onClick={() => onCancel(item.id)}
                 className="text-red-500"
               >
-                {i18next.t('取消')}
+                {t('Cancel')}
               </Button>
             )}
             {isCompleted && item.url && (
@@ -149,9 +150,9 @@ const CacheListItem = React.memo<{
                 type="link"
                 icon={<SyncOutlined />}
                 onClick={() => onRefresh(item.id)}
-                title={i18next.t('刷新缓存')}
+                title={t('Refresh cache')}
               >
-                {i18next.t('刷新')}
+                {t('Refresh')}
               </Button>
             )}
             {isCompleted && (
@@ -160,9 +161,9 @@ const CacheListItem = React.memo<{
                 danger
                 icon={<DeleteOutlined />}
                 onClick={() => onDelete(item.id)}
-                title={i18next.t('删除缓存')}
+                title={t('Delete cache')}
               >
-                {i18next.t('删除')}
+                {t('Delete')}
               </Button>
             )}
           </div>
@@ -179,7 +180,7 @@ interface CacheManagerModalProps {
   onClose: () => void;
 }
 
-// 从 demoData 中获取所有可缓存的数据资源
+// Collect cacheable resources from the demo catalog.
 const getCacheableResources = () => {
   const resources: Array<{ url: string; name: string }> = [];
 
@@ -201,6 +202,7 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
   visible,
   onClose,
 }) => {
+  useLanguage();
   const { token } = theme.useToken();
 
   const {
@@ -215,14 +217,14 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
     batchCacheFromURLs,
   } = useCacheManager();
 
-  // 直接从 cacheItems 计算统计信息
+  // Compute statistics directly from cacheItems.
   const cacheStats = useMemo(() => {
     const count = cacheItems.length;
     const totalSize = cacheItems.reduce((sum, item) => sum + item.size, 0);
     return { count, totalSize };
   }, [cacheItems]);
 
-  // 删除缓存
+  // Delete a cache entry.
   const handleDeleteCache = useCallback(
     async (cacheId: string) => {
       await deleteCachedData(cacheId);
@@ -230,12 +232,12 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
     [deleteCachedData],
   );
 
-  // 清空所有缓存
+  // Clear every cache entry.
   const handleClearAllCache = useCallback(async () => {
     await clearAllCache();
   }, [clearAllCache]);
 
-  // 批量缓存所有数据
+  // Cache all data in a batch.
   const handleBatchCache = useCallback(async () => {
     const resources = getCacheableResources();
     await batchCacheFromURLs(resources);
@@ -247,7 +249,7 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
     }
   }, [visible, initializeCacheItems]);
 
-  // 获取状态颜色
+  // Get the status color.
   const getStatusColor = (status: CacheItem['status']) => {
     switch (status) {
       case 'success':
@@ -262,7 +264,7 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
     }
   };
 
-  // 获取状态图标
+  // Get the status icon.
   const getStatusIcon = (status: CacheItem['status']) => {
     switch (status) {
       case 'success':
@@ -277,7 +279,7 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
     }
   };
 
-  // 创建稳定的回调函数
+  // Create stable callbacks.
   const handleCancel = useCallback(
     (id: string) => {
       cancelCaching(id);
@@ -299,17 +301,17 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
     [handleDeleteCache],
   );
 
-  // 排序缓存项：正在缓存的在前，其他按时间排序
+  // Sort active downloads first, then sort by timestamp.
   const sortedCacheItems = useMemo(() => {
     return [...cacheItems].sort((a, b) => {
       const aIsCaching = a.status === 'caching';
       const bIsCaching = b.status === 'caching';
 
-      // 正在缓存的排在最前面
+      // Place active downloads first.
       if (aIsCaching && !bIsCaching) return -1;
       if (!aIsCaching && bIsCaching) return 1;
 
-      // 其他按时间戳排序
+      // Sort remaining items by timestamp.
       return b.timestamp - a.timestamp;
     });
   }, [cacheItems]);
@@ -319,20 +321,20 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
       title={
         <Space>
           <DatabaseOutlined />
-          {i18next.t('数据缓存管理')}
+          {t('Data cache management')}
           <div>
             <Tag color="blue">
-              {cacheStats.count} {i18next.t('项')}
+              {cacheStats.count} {t('items')}
             </Tag>
             <Tag color="green">{formatCacheSize(cacheStats.totalSize)}</Tag>
             {batchProgress && (
               <Tag color="processing">
-                {i18next.t('批量缓存')}: {batchProgress.completed}/
+                {t('Batch cache')}: {batchProgress.completed}/
                 {batchProgress.total}
                 {batchProgress.failed > 0 && (
                   <span style={{ color: '#ff4d4f' }}>
                     {' '}
-                    ({i18next.t('失败')}: {batchProgress.failed})
+                    ({t('Failed')}: {batchProgress.failed})
                   </span>
                 )}
               </Tag>
@@ -350,7 +352,7 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
           icon={<CloudDownloadOutlined />}
           onClick={handleBatchCache}
         >
-          {i18next.t('批量缓存')}
+          {t('Batch cache')}
         </Button>,
         <Button
           key="clear"
@@ -358,18 +360,18 @@ const CacheManagerModal: React.FC<CacheManagerModalProps> = ({
           danger
           onClick={handleClearAllCache}
         >
-          {i18next.t('清空所有')}
+          {t('Clear all')}
         </Button>,
         <Button key="cancel" onClick={onClose}>
-          {i18next.t('关闭')}
+          {t('Close')}
         </Button>,
       ]}
     >
       <div className="max-h-[60vh] overflow-y-auto">
-        {/* 统一的缓存列表 */}
+        {/* Unified cache list. */}
         {sortedCacheItems.length === 0 ? (
           <Empty
-            description={i18next.t('暂无缓存数据')}
+            description={t('No cached data')}
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             className="py-15"
           />

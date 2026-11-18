@@ -1,3 +1,4 @@
+import { useLanguage, getLanguage, t } from '../../i18n';
 import {
   DownloadOutlined,
   PlayCircleOutlined,
@@ -23,6 +24,7 @@ import { TaskStatusTag } from './TaskStatus';
 import { useLocalTask } from './useLocalTasks';
 
 export default function TaskDetailPage() {
+  useLanguage();
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -43,9 +45,11 @@ export default function TaskDetailPage() {
         <Alert
           type="error"
           showIcon
-          message={error || '任务不存在'}
+          message={error || t('Task not found')}
           action={
-            <Button onClick={() => navigate('/tasks')}>返回任务列表</Button>
+            <Button onClick={() => navigate('/tasks')}>
+              {t('Back to task list')}
+            </Button>
           }
         />
       </TaskLayout>
@@ -63,7 +67,10 @@ export default function TaskDetailPage() {
         <div>
           <h1>{task.name}</h1>
           <p>
-            {task.description || '当前任务对应一条数据，标注结果独立保存。'}
+            {task.description ||
+              t(
+                'This task contains one data item. Its annotation results are saved independently.',
+              )}
           </p>
         </div>
         <div className="task-heading-actions">
@@ -71,13 +78,13 @@ export default function TaskDetailPage() {
             icon={<SettingOutlined />}
             onClick={() => navigate(`/annotationTool?task=${task.id}`)}
           >
-            配置标注工具
+            {t('Configure annotation tools')}
           </Button>
           <Button
             icon={<DownloadOutlined />}
             onClick={() => setExportOpen(true)}
           >
-            导出
+            {t('Export')}
           </Button>
           <Button
             type="primary"
@@ -94,42 +101,48 @@ export default function TaskDetailPage() {
               }
             }}
           >
-            进入标注
+            {t('Open annotation workspace')}
           </Button>
         </div>
       </div>
       <div className="task-list-panel task-data-details">
         <Descriptions size="small" column={2}>
-          <Descriptions.Item label="状态">
+          <Descriptions.Item label={t('Status')}>
             <TaskStatusTag status={task.status} />
           </Descriptions.Item>
-          <Descriptions.Item label="数据类型">
+          <Descriptions.Item label={t('Data type')}>
             {kind ? dataKindLabels[kind] : records[0]?.attachmentType}
           </Descriptions.Item>
-          <Descriptions.Item label="Attachment 类型">
+          <Descriptions.Item label={t('Attachment type')}>
             {records[0]?.attachmentType}
           </Descriptions.Item>
-          <Descriptions.Item label="文件数量">{files.count}</Descriptions.Item>
-          <Descriptions.Item label="上次提交">
+          <Descriptions.Item label={t('File count')}>
+            {files.count}
+          </Descriptions.Item>
+          <Descriptions.Item label={t('Last submitted')}>
             {task.lastSavedAt
-              ? new Date(task.lastSavedAt).toLocaleString()
-              : '尚未提交'}
+              ? new Date(task.lastSavedAt).toLocaleString(getLanguage())
+              : t('Not submitted yet')}
           </Descriptions.Item>
         </Descriptions>
       </div>
       <div className="task-data-columns">
         <section className="task-list-panel task-data-details">
-          <h2>文件列表</h2>
+          <h2>{t('File list')}</h2>
           <Tree treeData={files.tree} defaultExpandAll selectable={false} />
         </section>
         <section className="task-list-panel task-data-details">
-          <h2>标注结果</h2>
+          <h2>{t('Annotation results')}</h2>
           {result ? (
             <pre className="task-result-json">
               {JSON.stringify(result, null, 2)}
             </pre>
           ) : (
-            <p>此数据尚未保存标注结果，进入标注工作台后提交。</p>
+            <p>
+              {t(
+                'No annotation results have been saved for this data. Submit them from the annotation workspace.',
+              )}
+            </p>
           )}
         </section>
       </div>

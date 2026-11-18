@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../i18n';
 import { Button, Link } from '@stardustai/annotation-client';
 import { Alert, Descriptions, Modal, Radio, Spin, Typography } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -20,6 +21,7 @@ export default function ExportTaskModal({
   onClose: () => void;
   open?: boolean;
 }) {
+  useLanguage();
   const {
     settings,
     loading: settingsLoading,
@@ -80,7 +82,9 @@ export default function ExportTaskModal({
     try {
       setReceipt(await deliverExport(payload, method, settings));
     } catch (error) {
-      setError((error as Error).message || '导出失败，请重试');
+      setError(
+        (error as Error).message || t('Export failed. Please try again'),
+      );
     } finally {
       sending.current = false;
       setBusy(false);
@@ -96,7 +100,7 @@ export default function ExportTaskModal({
   }
   return (
     <Modal
-      title="导出任务"
+      title={t('Export task')}
       open={open}
       width={700}
       style={{ top: 32 }}
@@ -108,16 +112,16 @@ export default function ExportTaskModal({
       footer={
         <div className="export-dialog-footer">
           <Link to="/exportSettings" target="_blank" rel="noopener noreferrer">
-            导出设置 ↗
+            {t('Export settings ↗')}
           </Link>
           {!receipt && (
             <Button disabled={busy} onClick={onClose}>
-              取消
+              {t('Cancel')}
             </Button>
           )}
           {receipt ? (
             <Button type="primary" onClick={onClose}>
-              完成
+              {t('Done')}
             </Button>
           ) : (
             <Button
@@ -126,7 +130,7 @@ export default function ExportTaskModal({
               disabled={!ready || !available}
               onClick={send}
             >
-              导出
+              {t('Export')}
             </Button>
           )}
         </div>
@@ -140,21 +144,23 @@ export default function ExportTaskModal({
       {payload && (
         <>
           <Descriptions size="small" column={1} className="export-task-summary">
-            <Descriptions.Item label="任务">
+            <Descriptions.Item label={t('Task')}>
               {payload.taskName}
             </Descriptions.Item>
-            <Descriptions.Item label="文件">
+            <Descriptions.Item label={t('Files')}>
               {payload.filename} · {formatSize(payload.blob.size)}
             </Descriptions.Item>
-            <Descriptions.Item label="数据">
-              {payload.recordCount} 条，
+            <Descriptions.Item label={t('Data')}>
+              {t('{{count}} records, ', { count: payload.recordCount })}
               {payload.legacyProgress
-                ? '提交进度未确认'
-                : `已提交 ${payload.submittedCount} 条`}
+                ? t('Submission progress is unconfirmed')
+                : t('{{v0}} submitted', { v0: payload.submittedCount })}
             </Descriptions.Item>
           </Descriptions>
           <p className="export-content-note">
-            导出数据引用、工具配置和已保存结果。原始文件单独存储。
+            {t(
+              'Export data references, tool configuration, and saved results. Original files are stored separately.',
+            )}
           </p>
           <Radio.Group
             className="export-method-options"
@@ -166,17 +172,18 @@ export default function ExportTaskModal({
               setError('');
             }}
           >
-            <Radio value="download">本地下载</Radio>
+            <Radio value="download">{t('Local download')}</Radio>
             <Radio value="api" disabled={!settings?.api}>
-              API{!settings?.api ? '（未配置）' : ''}
+              API{!settings?.api ? t('(not configured)') : ''}
             </Radio>
             <Radio value="storage" disabled={!source}>
-              对象存储{!source ? '（未配置）' : ''}
+              {t('Object storage')}
+              {!source ? t('(not configured)') : ''}
             </Radio>
           </Radio.Group>
           <div className="export-target-preview">
             {method === 'download' ? (
-              <span>下载到当前设备</span>
+              <span>{t('Download to this device')}</span>
             ) : method === 'api' ? (
               <>
                 <strong>{settings?.api?.method}</strong>
@@ -207,7 +214,9 @@ export default function ExportTaskModal({
         <Alert
           type="info"
           showIcon
-          message="对象存储目标的数据源不可用，请在导出设置中重新选择。"
+          message={t(
+            'The export data source is unavailable. Select it again in export settings.',
+          )}
           className="mt-3"
         />
       )}
@@ -218,10 +227,10 @@ export default function ExportTaskModal({
           className="mt-3"
           message={
             receipt.method === 'api'
-              ? `API 已接收，HTTP ${receipt.status}`
+              ? t('API accepted the data, HTTP {{v0}}', { v0: receipt.status })
               : receipt.method === 'storage'
-              ? '已上传到对象存储'
-              : '已开始下载'
+              ? t('Uploaded to object storage')
+              : t('Download started')
           }
           description={
             receipt.method === 'storage' ? (

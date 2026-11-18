@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   PublicAnnotationInput,
   RosettaAnnotationDraft,
@@ -21,7 +22,11 @@ export function stageLocalFiles(
 ) {
   const plan = planLocalTasks(files, folder ? 'folder' : 'file', true);
   if (!plan.tasks.length)
-    throw new Error('没有找到支持的图片、点云、音视频或文本文件');
+    throw new Error(
+      t(
+        'No supported images, point clouds, audio, video, or text files were found',
+      ),
+    );
   const imports = plan.tasks.map((task) =>
     buildLocalImport(task.files, task.kind, task.sequence, crypto.randomUUID()),
   );
@@ -65,7 +70,7 @@ export function applyAnnotationDraft(
   const count =
     value.taskParams.type === 'include' ? 1 : value.taskParams.records.length;
   if (!Number.isInteger(draft.index) || draft.index < 0 || draft.index >= count)
-    throw new Error('标注数据位置无效');
+    throw new Error(t('Invalid annotation data location'));
   if (value.taskParams.type === 'include')
     value.taskResult = structuredClone(draft.result);
   else {

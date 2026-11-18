@@ -1,16 +1,20 @@
+import { t } from '../i18n';
 import { database } from '../localData/database';
 import { notifyLocalChange } from '../localData/events';
 import type { ApiExportTarget, ExportSettings } from './types';
 
 export function apiExportURL(template: string, taskId: string) {
   const replaced = template.replace(/\{taskId\}/g, encodeURIComponent(taskId));
-  if (/[{}]/.test(replaced)) throw new Error('API 地址只支持 {taskId} 占位符');
+  if (/[{}]/.test(replaced))
+    throw new Error(t('The API URL only supports the {taskId} placeholder'));
   let url: URL;
   try {
     url = new URL(replaced);
   } catch {
     throw new Error(
-      '请输入完整的 API 地址，例如 https://example.com/api/annotations',
+      t(
+        'Enter a complete API URL, such as https://example.com/api/annotations',
+      ),
     );
   }
   if (
@@ -19,7 +23,11 @@ export function apiExportURL(template: string, taskId: string) {
     url.password ||
     url.hash
   )
-    throw new Error('API 地址需使用 HTTP / HTTPS，鉴权信息请放在请求头中');
+    throw new Error(
+      t(
+        'The API URL must use HTTP or HTTPS. Put authentication information in request headers',
+      ),
+    );
   return url.href;
 }
 
@@ -27,15 +35,16 @@ export function normalizeApiTarget(value: ApiExportTarget): ApiExportTarget {
   const url = value.url.trim();
   apiExportURL(url, 'task-id');
   if (!['POST', 'PUT'].includes(value.method))
-    throw new Error('API 请求方法请选择 POST 或 PUT');
+    throw new Error(t('Select POST or PUT as the API request method'));
   const seen = new Set<string>();
   const headers = (value.headers || []).flatMap((header) => {
     const name = (header.name || '').trim();
     const content = header.value || '';
     if (!name && !content) return [];
     const key = name.toLowerCase();
-    if (!name) throw new Error('请填写请求头名称');
-    if (seen.has(key)) throw new Error(`请求头重复：${name}`);
+    if (!name) throw new Error(t('Enter a request header name'));
+    if (seen.has(key))
+      throw new Error(t('Duplicate request header: {{v0}}', { v0: name }));
     if (
       /^(sec-|proxy-)/.test(key) ||
       [
@@ -51,11 +60,16 @@ export function normalizeApiTarget(value: ApiExportTarget): ApiExportTarget {
         'access-control-request-headers',
       ].includes(key)
     )
-      throw new Error(`该请求头由浏览器管理，不能手动设置：${name}`);
+      throw new Error(
+        t(
+          'This header is managed by the browser and cannot be set manually: {{v0}}',
+          { v0: name },
+        ),
+      );
     try {
       new Headers([[name, content]]);
     } catch {
-      throw new Error(`请求头格式不正确：${name}`);
+      throw new Error(t('Invalid request header: {{v0}}', { v0: name }));
     }
     seen.add(key);
     return [{ name, value: content.trim() }];
@@ -70,7 +84,11 @@ export function exportPrefix(value: string) {
       (part) => part === '.' || part === '..' || /[\0\r\n\\]/.test(part),
     )
   )
-    throw new Error('导出目录不能包含 .、..、反斜杠或控制字符');
+    throw new Error(
+      t(
+        'The export directory cannot contain ., .., backslashes, or control characters',
+      ),
+    );
   return parts.length ? `${parts.join('/')}/` : '';
 }
 
@@ -79,7 +97,7 @@ export function normalizeExportSettings(
 ): ExportSettings {
   const defaultMethod = value.defaultMethod || 'download';
   if (!['download', 'api', 'storage'].includes(defaultMethod))
-    throw new Error('请选择有效的默认导出方式');
+    throw new Error(t('Select a valid default export method'));
   const api = value.api?.url?.trim()
     ? normalizeApiTarget(value.api)
     : undefined;
@@ -90,9 +108,15 @@ export function normalizeExportSettings(
       }
     : undefined;
   if (defaultMethod === 'api' && !api)
-    throw new Error('请配置 API 地址后再设为默认导出方式');
+    throw new Error(
+      t('Configure the API URL before making it the default export method'),
+    );
   if (defaultMethod === 'storage' && !storage)
-    throw new Error('请选择对象存储数据源后再设为默认导出方式');
+    throw new Error(
+      t(
+        'Select an object storage data source before making it the default export method',
+      ),
+    );
   return { id: 'default', defaultMethod, api, storage, updatedAt: Date.now() };
 }
 
@@ -115,7 +139,9 @@ export async function saveExportSettings(value: Partial<ExportSettings>) {
       settings.storage &&
       !(await tx.objectStore('connections').get(settings.storage.sourceId))
     )
-      throw new Error('目标数据源已被删除，请重新选择');
+      throw new Error(
+        t('The destination data source was deleted. Select it again'),
+      );
     await tx.objectStore('exportSettings').put(settings);
     await tx.done;
   } catch (error) {

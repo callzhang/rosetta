@@ -176,10 +176,10 @@ test('configured export delivery', async (t) => {
       );
       assert.throws(
         () => normalizeExportSettings({ defaultMethod: 'storage' }),
-        /数据源/,
+        /data source/i,
       );
-      assert.throws(() => exportPrefix('results/../input'), /目录/);
-      assert.throws(() => exportPrefix('results\\input'), /目录/);
+      assert.throws(() => exportPrefix('results/../input'), /directory/i);
+      assert.throws(() => exportPrefix('results\\input'), /directory/i);
       assert.equal(
         apiExportURL('https://example.test/results?id={taskId}', '任务/一'),
         'https://example.test/results?id=%E4%BB%BB%E5%8A%A1%2F%E4%B8%80',
@@ -190,7 +190,7 @@ test('configured export delivery', async (t) => {
           defaultMethod: 'storage',
           storage: { sourceId: 'missing-source', prefix: '' },
         }),
-        /已被删除/,
+        /deleted/i,
       );
       assert.deepEqual(await getExportSettings(), before);
     },
@@ -300,7 +300,7 @@ test('configured export delivery', async (t) => {
             throw new TypeError('Failed to fetch');
           }) as typeof fetch,
         }),
-        /跨域/,
+        /CORS/i,
       );
       assert.equal(
         (await loadSession('existing-task')).input.taskParams.type !==
@@ -446,8 +446,8 @@ test('configured export delivery', async (t) => {
       });
       for (const [code, expected] of [
         ['AccessDenied', /PutObject/],
-        ['ExpiredToken', /过期/],
-        ['SignatureDoesNotMatch', /签名/],
+        ['ExpiredToken', /expired/i],
+        ['SignatureDoesNotMatch', /Signature/i],
       ] as const) {
         await assert.rejects(
           deliverExport(snapshot, 'storage', settings, {
@@ -483,7 +483,7 @@ test('configured export delivery', async (t) => {
             },
           }),
         }),
-        /已存在/,
+        /already exists/i,
       );
       await deleteSavedConnection(rotated.connection);
       let called = false;
@@ -494,7 +494,7 @@ test('configured export delivery', async (t) => {
             throw new Error('must not call');
           },
         }),
-        /已被删除/,
+        /deleted/i,
       );
       assert.equal(called, false);
     },

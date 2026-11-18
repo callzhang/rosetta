@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { useLocalQuery } from '../localData/useLocalQuery';
 import { getExportSettings } from './settings';
 
@@ -9,7 +10,7 @@ export function useExportSettings() {
   } = useLocalQuery(
     'export-settings',
     getExportSettings,
-    '无法读取本地导出设置，请检查浏览器存储',
+    t('Cannot read local export settings. Check browser storage'),
   );
   return { settings, loading, error };
 }

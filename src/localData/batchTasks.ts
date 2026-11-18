@@ -1,3 +1,4 @@
+import { t, getLanguage } from '../i18n';
 import type { DataKind, LocalFile } from './files';
 import { fileKind, normalizePath } from './files';
 
@@ -34,7 +35,7 @@ export function planLocalTasks(
     split,
     sequence,
     prefix,
-    root.split('/').filter(Boolean).pop() || '本地文件',
+    root.split('/').filter(Boolean).pop() || t('Local files'),
   );
 }
 
@@ -46,7 +47,7 @@ export function planTaskFiles<T>(
   rootName: string,
 ) {
   const groups = new Map<string, TaskGroup<T>>();
-  const compare = new Intl.Collator('zh-CN', { numeric: true });
+  const compare = new Intl.Collator(getLanguage(), { numeric: true });
   const seen = new Set<string>();
   let skippedCount = 0;
   for (const entry of [...entries].sort((a, b) =>
@@ -65,8 +66,13 @@ export function planTaskFiles<T>(
       continue;
     }
     if (prefix && !path.startsWith(prefix))
-      throw new Error('文件不在所选父文件夹或目录内，请重新选择');
-    if (seen.has(path)) throw new Error(`文件路径重复：${path}`);
+      throw new Error(
+        t(
+          'The file is outside the selected parent folder or directory. Select it again',
+        ),
+      );
+    if (seen.has(path))
+      throw new Error(t('Duplicate file path: {{v0}}', { v0: path }));
     seen.add(path);
     const relative = path.slice(prefix.length);
     const continuous =
@@ -84,7 +90,7 @@ export function planTaskFiles<T>(
       group = {
         key,
         name,
-        path: scope.replace(/\/$/, '') || '所选文件',
+        path: scope.replace(/\/$/, '') || t('Selected files'),
         kind,
         mixedKinds: false,
         sequence: continuous,

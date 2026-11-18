@@ -1,7 +1,7 @@
-欢迎使用 Rosetta 独立标注工具。
+Welcome to the Rosetta standalone annotation tool.
 
-周一上午，李明从上海出发，乘坐高铁前往杭州，与团队讨论自动驾驶数据的标注方案。
+On Monday morning, Alex traveled from London to Cambridge by train to discuss an autonomous driving annotation project with the team.
 
-他们需要为路口图片中的车辆和行人绘制矩形框，为激光雷达点云中的障碍物添加三维标记，并从这段文字中识别人名、城市和时间。
+They need to draw rectangles around vehicles and pedestrians in intersection images, add 3D annotations to obstacles in LiDAR point clouds, and identify people, cities, and times in this text.
 
-试着选择“李明”或“上海”，开始你的第一条标注。
+Select “Alex” or “London” to create your first annotation.

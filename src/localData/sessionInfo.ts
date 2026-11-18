@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   DataRecord,
   PublicAnnotationInput,
@@ -6,10 +7,18 @@ import type { StorageSource } from '../objectStorage/types';
 
 export type TaskStatus = 'draft' | 'pending' | 'in_progress' | 'completed';
 export const taskStatusLabels: Record<TaskStatus, string> = {
-  draft: '草稿',
-  pending: '待标注',
-  in_progress: '标注中',
-  completed: '已完成',
+  get draft() {
+    return t('Draft');
+  },
+  get pending() {
+    return t('To annotate');
+  },
+  get in_progress() {
+    return t('In progress');
+  },
+  get completed() {
+    return t('Completed');
+  },
 };
 
 export interface AnnotationSession {
@@ -44,7 +53,7 @@ export interface SessionSummary {
   lastSavedAt?: number;
 }
 
-export function recordName(record: DataRecord, fallback = '未命名数据') {
+export function recordName(record: DataRecord, fallback = t('Untitled data')) {
   const name = (record as { name?: unknown })?.name || record?.metadata?.title;
   if (typeof name === 'string' && name.trim()) return name.trim().slice(0, 100);
   if (
@@ -120,7 +129,7 @@ export function normalizeSession(
     name:
       value.name ||
       (typeof recordName === 'string' && recordName) ||
-      '未命名任务',
+      t('Untitled task'),
     description: value.description || '',
     submittedIndices,
     legacyProgress:
@@ -149,7 +158,8 @@ export function sessionSummary(value: AnnotationSession): SessionSummary {
     session.cloudSources?.map(
       (source) => `${source.provider.toUpperCase()} · ${source.bucket}`,
     ) || [];
-  if (referencedImportIds(session.input).size) sources.unshift('本地文件');
+  if (referencedImportIds(session.input).size)
+    sources.unshift(t('Local files'));
   return {
     id: session.id,
     name: session.name,
@@ -161,7 +171,9 @@ export function sessionSummary(value: AnnotationSession): SessionSummary {
     index: session.index,
     source:
       sources.join(' / ') ||
-      (sessionRecords(session.input).length ? 'JSON / 示例数据' : '未导入数据'),
+      (sessionRecords(session.input).length
+        ? t('JSON / example data')
+        : t('No data imported')),
     attachmentType: sessionRecords(session.input)[0]?.attachmentType,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt,

@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../i18n';
 import { Alert, Drawer, Empty, Input, Spin } from 'antd';
 import { useRef, useState } from 'react';
 import type { SessionSummary } from '../../localData/sessionInfo';
@@ -22,6 +23,7 @@ export default function AnnotationTaskDrawer({
   onSelect: (id: string) => void;
   onClose: () => void;
 }) {
+  useLanguage();
   const [query, setQuery] = useState('');
   const current = useRef<HTMLButtonElement>(null);
   const search = query.trim().toLowerCase();
@@ -33,7 +35,7 @@ export default function AnnotationTaskDrawer({
 
   return (
     <Drawer
-      title="任务列表"
+      title={t('Task list')}
       placement="left"
       width="min(360px, 100vw)"
       rootClassName="annotation-task-drawer"
@@ -53,15 +55,18 @@ export default function AnnotationTaskDrawer({
     >
       <div className="annotation-task-search">
         <Input.Search
-          aria-label="搜索任务"
-          placeholder="搜索任务名称或来源"
+          aria-label={t('Search tasks')}
+          placeholder={t('Search by task name or source')}
           allowClear
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
       {error && <Alert type="error" showIcon message={error} />}
-      <div className="annotation-task-items" aria-label="任务列表内容">
+      <div
+        className="annotation-task-items"
+        aria-label={t('Task list content')}
+      >
         {loading ? (
           <div className="task-loading">
             <Spin />
@@ -79,7 +84,9 @@ export default function AnnotationTaskDrawer({
             >
               <span className="annotation-task-name">
                 <strong title={task.name}>{task.name}</strong>
-                <small>{task.count ? task.source : '等待导入数据'}</small>
+                <small>
+                  {task.count ? task.source : t('Waiting for data import')}
+                </small>
               </span>
               <TaskStatusTag status={task.status} />
             </button>
@@ -87,7 +94,9 @@ export default function AnnotationTaskDrawer({
         ) : (
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={tasks.length ? '没有匹配的任务' : '暂无任务'}
+            description={
+              tasks.length ? t('No matching tasks') : t('No tasks yet')
+            }
           />
         )}
       </div>

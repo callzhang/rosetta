@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../i18n';
 import {
   FolderOpenOutlined,
   InboxOutlined,
@@ -64,6 +65,7 @@ export default function BatchTaskCreateModal({
   onCancel: () => void;
   onCreated: (count: number) => void;
 }) {
+  useLanguage();
   const navigate = useNavigate();
   const fileInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
@@ -176,7 +178,7 @@ export default function BatchTaskCreateModal({
 
   function pick(entries: LocalFile[], folder: boolean) {
     if (!entries.length) {
-      setError('没有找到文件，请重新选择');
+      setError(t('No files found. Select them again'));
       return;
     }
     const firstRoot = entries[0].path.split('/')[0];
@@ -207,14 +209,14 @@ export default function BatchTaskCreateModal({
         { recursive: true, signal: abort.signal, onProgress: setReadCount },
       );
       if (abort.signal.aborted)
-        throw new DOMException('已取消读取', 'AbortError');
+        throw new DOMException(t('Reading canceled'), 'AbortError');
       setCloudFiles(objects);
       setSelected(undefined);
       setNames({});
     } catch (error) {
       setError(
         (error as Error).name === 'AbortError'
-          ? '已取消读取目录，未创建任务'
+          ? t('Directory reading canceled. No tasks were created')
           : storageError(error),
       );
     } finally {
@@ -264,7 +266,9 @@ export default function BatchTaskCreateModal({
       }
     } else if (mode === 'cloud') {
       if (!directory || !cloudFiles)
-        throw new Error('请先选择云端目录并读取数据清单');
+        throw new Error(
+          t('Select a cloud directory and read its file list first'),
+        );
       for (const task of cloudPlan.tasks.filter(
         (task) => !selectedKeys || selectedKeys.has(task.key),
       )) {
@@ -306,7 +310,7 @@ export default function BatchTaskCreateModal({
       navigate(`/annotationTool?draft=${id}`);
     } catch (error) {
       releaseStagedImports(owner);
-      setError((error as Error).message || '无法预览数据');
+      setError((error as Error).message || t('Cannot preview data'));
     } finally {
       setPhase('idle');
     }
@@ -343,7 +347,7 @@ export default function BatchTaskCreateModal({
       });
       setProgress(100);
       if (abort.signal.aborted)
-        throw new DOMException('已取消导入', 'AbortError');
+        throw new DOMException(t('Import canceled'), 'AbortError');
       setPhase('tasks');
       const created = await createTasks(pending);
       committed = true;
@@ -354,15 +358,19 @@ export default function BatchTaskCreateModal({
           await releaseUnusedImports(importIds);
         } catch {
           setError(
-            '本次任务未创建，部分临时文件未能清理。请检查浏览器本地存储。',
+            t(
+              'No tasks were created, but some temporary files could not be cleaned up. Check browser storage.',
+            ),
           );
           return;
         }
       }
       setError(
         (error as Error).name === 'AbortError'
-          ? '已取消导入，未创建任务。可调整清单后重试。'
-          : (error as Error).message || '批量创建失败，请重试',
+          ? t(
+              'Import canceled. No tasks were created. Adjust the list and try again.',
+            )
+          : (error as Error).message || t('Batch creation failed. Try again'),
       );
     } finally {
       controller.current = undefined;
@@ -372,7 +380,7 @@ export default function BatchTaskCreateModal({
 
   return (
     <Modal
-      title="新建任务 / 批量创建"
+      title={t('New task / batch create')}
       open
       width={960}
       style={{ top: 32 }}
@@ -384,17 +392,20 @@ export default function BatchTaskCreateModal({
       footer={
         <div className="batch-task-footer">
           <span>
-            已选择 {selectedTasks.length} 个任务 · {formatSize(totalSize)}
+            {t('{{count}} tasks selected · {{size}}', {
+              count: selectedTasks.length,
+              size: formatSize(totalSize),
+            })}
           </span>
           <Button
             disabled={collecting || phase === 'tasks'}
             onClick={() => (busy ? controller.current?.abort() : onCancel())}
           >
             {phase === 'reading'
-              ? '取消读取'
+              ? t('Cancel reading')
               : phase === 'files'
-              ? '取消导入'
-              : '取消'}
+              ? t('Cancel import')
+              : t('Cancel')}
           </Button>
           <Button
             disabled={
@@ -406,7 +417,7 @@ export default function BatchTaskCreateModal({
             }
             onClick={previewSelection}
           >
-            预览并配置工具
+            {t('Preview and configure tools')}
           </Button>
           <Button
             type="primary"
@@ -421,8 +432,8 @@ export default function BatchTaskCreateModal({
             onClick={submit}
           >
             {phase === 'tasks'
-              ? '正在创建任务'
-              : `创建 ${selectedTasks.length} 个任务`}
+              ? t('Creating tasks')
+              : t('Create {{v0}} tasks', { v0: selectedTasks.length })}
           </Button>
         </div>
       }
@@ -445,13 +456,23 @@ export default function BatchTaskCreateModal({
           );
         }}
         items={[
-          { key: 'local', label: '本地文件', disabled: busy || collecting },
-          { key: 'cloud', label: '对象存储', disabled: busy || collecting },
+          {
+            key: 'local',
+            label: t('Local files'),
+            disabled: busy || collecting,
+          },
+          {
+            key: 'cloud',
+            label: t('Object storage'),
+            disabled: busy || collecting,
+          },
           { key: 'json', label: 'JSON / JSONL', disabled: busy || collecting },
         ]}
       />
       <p className="batch-task-intro">
-        每条数据创建一个任务。多选文件即可批量创建；同目录的连续帧可合并为一条数据。
+        {t(
+          'Create one task per data item. Select multiple files for batch creation; consecutive frames in the same directory can be grouped into one data item.',
+        )}
       </p>
       <div style={{ display: mode === 'local' ? undefined : 'none' }}>
         <div
@@ -461,9 +482,11 @@ export default function BatchTaskCreateModal({
           <InboxOutlined />
           <div>
             <strong>
-              {collecting ? '正在读取文件…' : '拖入文件或父文件夹'}
+              {collecting
+                ? t('Reading files…')
+                : t('Drop files or a parent folder')}
             </strong>
-            <p>PCD / PLY、图片、音视频、文本与文档</p>
+            <p>{t('PCD / PLY, images, audio, video, text, and documents')}</p>
           </div>
           <div className="batch-task-pickers">
             <Button
@@ -471,14 +494,14 @@ export default function BatchTaskCreateModal({
               disabled={busy || collecting}
               onClick={() => fileInput.current?.click()}
             >
-              选择多个文件
+              {t('Select multiple files')}
             </Button>
             <Button
               icon={<FolderOpenOutlined />}
               disabled={busy || collecting}
               onClick={() => folderInput.current?.click()}
             >
-              选择父文件夹
+              {t('Select parent folder')}
             </Button>
           </div>
         </div>
@@ -509,10 +532,12 @@ export default function BatchTaskCreateModal({
           />
           <div className="batch-cloud-read">
             <span className="batch-task-hint">
-              只保存文件引用，标注时按需读取原文件。清单包含所选目录的所有子目录。
+              {t(
+                'Only file references are saved; original files are read on demand during annotation. The list includes all subdirectories of the selected directory.',
+              )}
             </span>
             <Button disabled={!directory || busy} onClick={readDirectory}>
-              读取目录生成清单
+              {t('Read directory to build list')}
             </Button>
           </div>
         </div>
@@ -532,7 +557,7 @@ export default function BatchTaskCreateModal({
       {mode === 'json' && (
         <div className="task-json-import">
           <label>
-            上传 PublicAnnotationInput JSON 或 DataRecord JSONL{' '}
+            {t('Upload PublicAnnotationInput JSON or DataRecord JSONL')}{' '}
             <input
               type="file"
               accept=".json,.jsonl"
@@ -552,8 +577,10 @@ export default function BatchTaskCreateModal({
             rows={7}
             value={jsonText}
             disabled={busy}
-            aria-label="JSON 数据"
-            placeholder="也可粘贴 PublicAnnotationInput JSON，包含多条数据时自动拆分。"
+            aria-label={t('JSON data')}
+            placeholder={t(
+              'You can also paste PublicAnnotationInput JSON. Multiple records are split automatically.',
+            )}
             onChange={(event) => {
               setJsonText(event.target.value);
               setSelected(undefined);
@@ -564,7 +591,7 @@ export default function BatchTaskCreateModal({
       )}
       {mode !== 'json' && (
         <div className="batch-task-options">
-          <span>数据拆分</span>
+          <span>{t('Data grouping')}</span>
           <Radio.Group
             value={split}
             disabled={busy || collecting}
@@ -575,7 +602,7 @@ export default function BatchTaskCreateModal({
               setError('');
             }}
           >
-            <Radio value="file">每个文件一个任务</Radio>
+            <Radio value="file">{t('One task per file')}</Radio>
             <Radio
               value="folder"
               disabled={
@@ -583,21 +610,28 @@ export default function BatchTaskCreateModal({
                 !files.some((entry) => entry.path.includes('/'))
               }
             >
-              同目录连续帧
+              {t('Consecutive frames in the same directory')}
             </Radio>
           </Radio.Group>
         </div>
       )}
       <p className="batch-task-hint">
         {split === 'folder'
-          ? '同一个实际目录内的点云或图片组成一条连续帧数据；其他文件逐个创建，子目录分别处理。'
-          : '每个文件创建一个独立任务。点云或图片连续帧请放在同一目录，选择“同目录连续帧”。'}
+          ? t(
+              'Group point clouds or images in the same directory into consecutive frames. Other files become individual tasks; subdirectories are processed separately.',
+            )
+          : t(
+              'Create a separate task for each file. For consecutive point cloud or image frames, put them in the same directory and select “Consecutive frames in the same directory”.',
+            )}
       </p>
       <div className="batch-task-preview-heading">
         <strong>
-          任务清单 <span>{plan.tasks.length} 个</span>
+          {t('Task list')}
+          <span>
+            {plan.tasks.length} {t('items')}
+          </span>
         </strong>
-        <span>可修改任务名称，取消勾选不需要的任务</span>
+        <span>{t('Edit task names and clear the tasks you do not need')}</span>
       </div>
       <Table<TaskGroup<unknown>>
         size="small"
@@ -618,19 +652,21 @@ export default function BatchTaskCreateModal({
           emptyText:
             mode === 'cloud'
               ? cloudFiles
-                ? '当前目录没有可标注的文件'
-                : '选择数据源和目录，点击“读取目录生成清单”'
+                ? t('This directory has no supported files')
+                : t(
+                    'Select a data source and directory, then click “Read directory to build list”',
+                  )
               : files.length
-              ? '没有可标注的文件，请重新选择'
-              : '选择文件或父文件夹后，在这里预览数据',
+              ? t('No supported files. Select them again')
+              : t('Select files or a parent folder to preview data here'),
         }}
         columns={[
           {
-            title: '任务名称',
+            title: t('Task name'),
             width: 230,
             render: (_, task) => (
               <Input
-                aria-label={`${task.path}的任务名称`}
+                aria-label={t('Task name for {{v0}}', { v0: task.path })}
                 value={names[task.key] ?? defaultName(task)}
                 maxLength={100}
                 status={
@@ -649,15 +685,17 @@ export default function BatchTaskCreateModal({
               />
             ),
           },
-          { title: '来源', dataIndex: 'path', ellipsis: true },
+          { title: t('Source'), dataIndex: 'path', ellipsis: true },
           {
-            title: '类型',
+            title: t('Type'),
             width: 125,
             render: (_, task) =>
-              `${dataKindLabels[task.kind]}${task.sequence ? '连续帧' : ''}`,
+              `${dataKindLabels[task.kind]}${
+                task.sequence ? t('Consecutive frames') : ''
+              }`,
           },
           {
-            title: '文件 / 数据',
+            title: t('Files / data'),
             width: 105,
             render: (_, task) =>
               `${task.fileCount ?? task.files.length} / ${task.recordCount}`,
@@ -666,12 +704,13 @@ export default function BatchTaskCreateModal({
       />
       {!!plan.skippedCount && (
         <p className="batch-task-hint">
-          已忽略 {plan.skippedCount} 个不支持、隐藏或空文件。
+          {t('Ignored')}
+          {plan.skippedCount} {t('unsupported, hidden, or empty files.')}
         </p>
       )}
       {!!plan.tasks.length && (
         <label className="batch-task-description">
-          标注说明（应用到本次所有任务）
+          {t('Annotation instructions (apply to all tasks in this batch)')}
           <Input.TextArea
             rows={2}
             maxLength={2000}
@@ -679,7 +718,7 @@ export default function BatchTaskCreateModal({
             value={description}
             disabled={busy || collecting}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="可选，填写这批数据的标注要求"
+            placeholder={t('Optional instructions for annotating this batch')}
           />
         </label>
       )}
@@ -687,10 +726,10 @@ export default function BatchTaskCreateModal({
         <div className="batch-task-progress">
           <span>
             {phase === 'reading'
-              ? `正在读取目录，已发现 ${readCount} 个文件…`
+              ? t('Reading directory, found {{v0}} files…', { v0: readCount })
               : phase === 'files'
-              ? '正在保存本地文件…'
-              : '正在创建任务…'}
+              ? t('Saving local files…')
+              : t('Creating tasks…')}
           </span>
           {phase !== 'reading' && (
             <Progress percent={progress} status="active" />
@@ -702,7 +741,9 @@ export default function BatchTaskCreateModal({
           className="mt-3"
           type="error"
           showIcon
-          message={error || plan.error || '请补全已勾选数据的名称'}
+          message={
+            error || plan.error || t('Enter names for all selected data items')
+          }
         />
       )}
     </Modal>

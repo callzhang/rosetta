@@ -28,6 +28,11 @@ test(
       configFile: false,
       root,
       envDir: false,
+      define: {
+        'import.meta.env.VITE_ANNOTATION_URL': JSON.stringify(
+          'http://127.0.0.1:4175/',
+        ),
+      },
       logLevel: 'silent',
       plugins: [
         react({
@@ -105,12 +110,16 @@ test(
       let initial: FrameInput | undefined;
       let host: Remote<FrameHost> | undefined;
       let updates = 0;
+      let latestLanguage: string | undefined;
       const editor: FrameEditor = {
         async initialize(value) {
           initial = value;
         },
         async updateInput() {
           updates++;
+        },
+        async setLanguage(language) {
+          latestLanguage = language;
         },
         async captureDraft() {
           throw new Error('private fixture');
@@ -153,12 +162,18 @@ test(
           !document.querySelector('.rosetta-frame .ant-spin'),
         'The iframe handshake should complete',
       );
-      return { frame, initial: initial!, host: host!, updates: () => updates };
+      return {
+        frame,
+        initial: initial!,
+        host: host!,
+        updates: () => updates,
+        latestLanguage: () => latestLanguage,
+      };
     }
     async function switchFromDrawer(name: string) {
       const previousFrame = document.querySelector('iframe');
       const previousHash = window.location.hash;
-      findButton(document, '任务列表')!.click();
+      findButton(document, 'Task list')!.click();
       await until(
         () => document.querySelector('.annotation-task-drawer.ant-drawer-open'),
         'The task list should open as a drawer',
@@ -173,12 +188,12 @@ test(
       await until(
         () =>
           [...document.querySelectorAll('.ant-modal-confirm-title')].some(
-            (title) => title.textContent === '切换标注数据',
+            (title) => title.textContent === 'Switch annotation data',
           ),
         'Task selection should retain the existing save reminder',
       );
       assert.equal(window.location.hash, previousHash);
-      findButton(document, '切换数据')!.click();
+      findButton(document, 'Switch data')!.click();
       await until(
         () => document.querySelector('iframe') !== previousFrame,
         'Confirming should open the selected task in the current workspace',
@@ -248,14 +263,14 @@ test(
       confirmation.destroy();
       assert.equal(document.querySelector('.auth-guest-account'), null);
       assert.equal(document.querySelector('.annotation-preview-panel'), null);
-      const previewToggle = findButton(document, '查看数据与文件')!;
+      const previewToggle = findButton(document, 'View data and files')!;
       assert.equal(previewToggle.getAttribute('aria-expanded'), 'false');
       previewToggle.click();
       await until(
         () => document.querySelector('.annotation-preview-panel'),
         'Data preview and files should expand on demand',
       );
-      findButton(document, '收起数据与文件')!.click();
+      findButton(document, 'Collapse data and files')!.click();
       await until(
         () => !document.querySelector('.annotation-preview-panel'),
         'Data preview and files should collapse again',
@@ -268,8 +283,33 @@ test(
       let annotation = await connect();
       assert.equal(annotation.initial.view, 'annotation');
       assert.equal(annotation.initial.taskId, task.id);
-      assert.equal(findButton(document, '任务详情'), undefined);
-      findButton(document, '任务列表')!.click();
+      assert.equal(annotation.initial.language, 'en-US');
+      assert.equal(
+        new URL(annotation.frame.src).searchParams.get('lng'),
+        'en-US',
+      );
+      await window.hostTest.setLanguage('zh-CN');
+      await until(
+        () => annotation.latestLanguage() === 'zh-CN',
+        'Locale updates should reach the connected editor',
+      );
+      assert.equal(
+        document.querySelector('iframe'),
+        annotation.frame,
+        'Changing language must preserve the iframe',
+      );
+      assert.equal(
+        annotation.updates(),
+        0,
+        'A locale change must not reset the active input',
+      );
+      await window.hostTest.setLanguage('en-US');
+      await until(
+        () => annotation.latestLanguage() === 'en-US',
+        'The editor should receive English when switching back',
+      );
+      assert.equal(findButton(document, 'Task details'), undefined);
+      findButton(document, 'Task list')!.click();
       await until(
         () =>
           document.querySelector(
@@ -319,13 +359,14 @@ test(
       annotation = await switchFromDrawer(task.name);
       assert.equal(annotation.initial.taskId, task.id);
       const exportButton = [...document.querySelectorAll('button')].find(
-        (button) => button.textContent.replace(/\s/g, '') === '导出',
+        (button) => button.textContent.trim() === 'Export',
       )!;
       exportButton.click();
       const exportDialog = () =>
         [...document.querySelectorAll<HTMLElement>('.ant-modal')].find(
           (modal) =>
-            modal.querySelector('.ant-modal-title')?.textContent === '导出任务',
+            modal.querySelector('.ant-modal-title')?.textContent ===
+            'Export task',
         );
       await until(() => exportDialog(), 'Export dialog should open');
       await annotation.host.blockingDialogChanged(true);
@@ -352,7 +393,7 @@ test(
       assert.equal(await (resource as Blob).text(), 'local image');
       await assert.rejects(
         annotation.host.resolveResource('local://unrelated/secret.png'),
-        /不属于/,
+        /does not belong/i,
       );
       const result = {
         annotations: [],

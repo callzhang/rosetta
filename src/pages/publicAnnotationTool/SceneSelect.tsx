@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { Spin } from 'antd';
 import i18next from 'i18next';
@@ -16,6 +17,7 @@ export default observer(function SceneSelect({
   store: PublicAnnotationToolStore;
   onSelect: (input: PublicAnnotationInput, name: string) => void;
 }) {
+  useLanguage();
   const demoData = useDemoData();
   const [category, setCategory] = useState('custom');
   const [active, setActive] = useState('');
@@ -25,7 +27,7 @@ export default observer(function SceneSelect({
       setActive('');
     }
   }, [store.records.length]);
-  const title = useRef('示例数据');
+  const title = useRef(t('Example data'));
   const { loading, fetchPublicAnnotationInput, cancelDataLoad } =
     useEnhancedDataFetcher((input) =>
       onSelect(structuredClone(input), title.current),
@@ -45,15 +47,18 @@ export default observer(function SceneSelect({
   }
   const group = demoData.find((item) => item.id === category);
   return (
-    <section className="annotation-scene-panel" aria-label="场景案例">
-      <h2>场景案例</h2>
+    <section
+      className="annotation-scene-panel"
+      aria-label={t('Scene examples')}
+    >
+      <h2>{t('Scene examples')}</h2>
       <Spin spinning={loading}>
         <div className="annotation-scene-row">
-          <span className="annotation-scene-label">场景类型:</span>
+          <span className="annotation-scene-label">{t('Scene type:')}</span>
           <div
             className="annotation-scene-options"
             role="group"
-            aria-label="场景类型"
+            aria-label={t('Scene type')}
           >
             <button
               type="button"
@@ -64,7 +69,7 @@ export default observer(function SceneSelect({
                 setCategory('custom');
               }}
             >
-              自定义
+              {t('Custom')}
             </button>
             <button
               type="button"
@@ -76,7 +81,7 @@ export default observer(function SceneSelect({
                 load(exampleInput(example), example.name, example.id);
               }}
             >
-              默认示例
+              {t('Default examples')}
             </button>
             {demoData
               .filter((item) => item.sub.some((scene) => scene.input))
@@ -99,11 +104,11 @@ export default observer(function SceneSelect({
         </div>
         {category === 'custom' || category === 'examples' ? (
           <div className="annotation-scene-row">
-            <span className="annotation-scene-label">示例数据:</span>
+            <span className="annotation-scene-label">{t('Example data:')}</span>
             <div
               className="annotation-scene-options"
               role="group"
-              aria-label="默认示例数据"
+              aria-label={t('Default example data')}
             >
               {quickExamples.map((example) => (
                 <button
@@ -125,11 +130,13 @@ export default observer(function SceneSelect({
           </div>
         ) : (
           <div className="annotation-scene-row">
-            <span className="annotation-scene-label">典型场景:</span>
+            <span className="annotation-scene-label">
+              {t('Typical scenes:')}
+            </span>
             <div
               className="annotation-scene-options"
               role="group"
-              aria-label="典型场景"
+              aria-label={t('Typical scenes')}
             >
               {group?.sub
                 .filter((item) => item.input)

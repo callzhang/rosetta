@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { listSessions, loadSession } from '../../localData/storage';
 import { useLocalQuery } from '../../localData/useLocalQuery';
 
@@ -5,7 +6,7 @@ export function useTaskList() {
   const { data, loading, error } = useLocalQuery(
     'tasks',
     listSessions,
-    '无法读取本地任务，请检查浏览器存储是否可用。',
+    t('Cannot read local tasks. Check whether browser storage is available.'),
   );
   return { tasks: data ?? [], loading, error };
 }

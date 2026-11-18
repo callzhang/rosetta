@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   Operator,
   SlotSpecification,
@@ -8,7 +9,6 @@ import {
   ProjectTypeEnum,
   SlotType,
 } from '@stardustai/annotation-client';
-import i18next from 'i18next';
 import type { DataKind } from './files';
 
 export { dataKindLabels, kindFromRecord } from './recordKind';
@@ -23,27 +23,27 @@ export const projectTypeForKind: Record<DataKind, ProjectTypeEnum> = {
 export function createDefaultOperators(kind: DataKind): Operator[] {
   const definitions: Record<DataKind, [SlotType, string][]> = {
     pointcloud: [
-      [SlotType.Box3D, '3D框'],
-      [SlotType.Line3D, '3D折线'],
-      [SlotType.Point3D, '3D点'],
+      [SlotType.Box3D, t('3D box')],
+      [SlotType.Line3D, t('3D polyline')],
+      [SlotType.Point3D, t('3D point')],
     ],
     image: [
-      [SlotType.Box2D, '矩形框'],
-      [SlotType.Polygon, '多边形'],
-      [SlotType.Point, '关键点'],
+      [SlotType.Box2D, t('Rectangle')],
+      [SlotType.Polygon, t('Polygon')],
+      [SlotType.Point, t('Keypoint')],
     ],
     video: [
-      [SlotType.Box2D, '矩形框'],
-      [SlotType.Polygon, '多边形'],
-      [SlotType.Point, '关键点'],
+      [SlotType.Box2D, t('Rectangle')],
+      [SlotType.Polygon, t('Polygon')],
+      [SlotType.Point, t('Keypoint')],
     ],
-    audio: [[SlotType.TimeSlice, '音频片段']],
-    text: [[SlotType.Text, '文本选择']],
+    audio: [[SlotType.TimeSlice, t('Audio segment')]],
+    text: [[SlotType.Text, t('Text selection')]],
   };
   return definitions[kind].map(([type, label]) => ({
     key: `default-${type}`,
     type: OperatorType.Slot,
-    label: i18next.t(label) || label,
+    label: t(label) || label,
     slotSpecification: {
       type,
       ...(type === SlotType.Line3D ? { lineStyle: DEFAULT_LINE_STYLE } : {}),

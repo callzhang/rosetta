@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { forgetConnection } from './activeConnections';
 import { database } from '../localData/database';
 import { localTransaction } from '../localData/transaction';
@@ -26,12 +27,18 @@ export async function saveConnection(
         ? await tx.objectStore('connections').get(id)
         : previous;
     if (options.previousId && !previous)
-      throw new Error('数据源已被删除，请刷新列表后重试');
+      throw new Error(
+        t('The data source was deleted. Refresh the list and try again'),
+      );
     if (
       (options.requireNew && target) ||
       (options.previousId !== id && options.previousId && target)
     )
-      throw new Error('该 Bucket 已有保存的数据源，请编辑已有数据源');
+      throw new Error(
+        t(
+          'This bucket already has a saved data source. Edit the existing data source',
+        ),
+      );
     const value = {
       id,
       name: name?.trim() || previous?.name || connection.bucket,

@@ -77,6 +77,6 @@ export function fillInput(input: HTMLInputElement, value: string) {
 
 export function findButton(container: ParentNode, label: string) {
   return [...container.querySelectorAll('button')].find(
-    (node) => node.textContent.replace(/\s/g, '') === label,
+    (node) => node.textContent.replace(/\s/g, '') === label.replace(/\s/g, ''),
   );
 }

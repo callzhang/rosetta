@@ -1,3 +1,4 @@
+import { useLanguage, getLanguage, t } from '../../i18n';
 import {
   MoreOutlined,
   PlayCircleOutlined,
@@ -23,6 +24,7 @@ import { TaskStatusTag } from './TaskStatus';
 import { useTaskList } from './useLocalTasks';
 
 export default function TaskManagerPage() {
+  useLanguage();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const source = search.get('batchSource') || undefined;
@@ -68,8 +70,8 @@ export default function TaskManagerPage() {
     <TaskLayout>
       <div className="task-page-heading">
         <div>
-          <h1>任务管理</h1>
-          <p>导入数据后，选择任务开始标注。</p>
+          <h1>{t('Task management')}</h1>
+          <p>{t('Import data, then select a task to start annotating.')}</p>
         </div>
         <div className="task-heading-actions">
           <Button
@@ -78,40 +80,43 @@ export default function TaskManagerPage() {
             loading={!!busy}
             onClick={() => first && start(first.id)}
           >
-            开始标注
+            {t('Start annotating')}
           </Button>
           <Button
             type="primary"
             icon={<UploadOutlined />}
             onClick={() => setImportOpen(true)}
           >
-            新建任务 / 批量创建
+            {t('New task / batch create')}
           </Button>
         </div>
       </div>
       <div className="task-summary-strip">
         <span>
-          任务总数 <strong>{tasks.length}</strong>
+          {t('Total tasks')}
+          <strong>{tasks.length}</strong>
         </span>
         <span>
-          待标注{' '}
+          {t('To annotate')}{' '}
           <strong>
             {tasks.filter((task) => task.status === 'pending').length}
           </strong>
         </span>
         <span>
-          标注中{' '}
+          {t('In progress')}{' '}
           <strong>
             {tasks.filter((task) => task.status === 'in_progress').length}
           </strong>
         </span>
         <span>
-          已完成{' '}
+          {t('Completed')}{' '}
           <strong>
             {tasks.filter((task) => task.status === 'completed').length}
           </strong>
         </span>
-        <small>单条数据或一组连续帧对应一个任务。</small>
+        <small>
+          {t('Each task contains one data item or a sequence of frames.')}
+        </small>
       </div>
       {error && (
         <Alert type="error" showIcon message={error} className="mb-4" />
@@ -122,15 +127,18 @@ export default function TaskManagerPage() {
             activeKey={status}
             onChange={(value) => setStatus(value as any)}
             items={[
-              { key: 'all', label: `全部任务 ${tasks.length}` },
-              { key: 'pending', label: '待标注' },
-              { key: 'in_progress', label: '标注中' },
-              { key: 'completed', label: '已完成' },
+              {
+                key: 'all',
+                label: t('All tasks {{v0}}', { v0: tasks.length }),
+              },
+              { key: 'pending', label: t('To annotate') },
+              { key: 'in_progress', label: t('In progress') },
+              { key: 'completed', label: t('Completed') },
             ]}
           />
           <Input.Search
-            aria-label="搜索任务"
-            placeholder="搜索任务名称、说明或来源"
+            aria-label={t('Search tasks')}
+            placeholder={t('Search by task name, instructions, or source')}
             allowClear
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -144,50 +152,57 @@ export default function TaskManagerPage() {
           scroll={{ x: 920 }}
           pagination={{
             defaultPageSize: 20,
-            showTotal: (count) => `共 ${count} 个任务`,
+            showTotal: (count) => t('{{v0}} tasks', { v0: count }),
           }}
           locale={{
             emptyText: tasks.length
-              ? '没有匹配的任务'
-              : '还没有任务，点击“新建任务 / 批量创建”导入数据',
+              ? t('No matching tasks')
+              : t(
+                  'No tasks yet. Click “New task / batch create” to import data',
+                ),
           }}
           columns={[
             {
-              title: '任务名称',
+              title: t('Task name'),
               render: (_, task) => (
                 <div className="task-name-cell">
                   <Link to={`/tasks/${task.id}`}>{task.name}</Link>
-                  <span>{task.description || '单条数据任务'}</span>
+                  <span>{task.description || t('Single data item task')}</span>
                 </div>
               ),
             },
             {
-              title: '状态',
+              title: t('Status'),
               width: 100,
               render: (_, task) => <TaskStatusTag status={task.status} />,
             },
             {
-              title: '类型',
+              title: t('Type'),
               width: 145,
               dataIndex: 'attachmentType',
               ellipsis: true,
             },
             {
-              title: '数据来源',
+              title: t('Data source'),
               width: 200,
               dataIndex: 'source',
+              render: (value: string) =>
+                value
+                  .split(' / ')
+                  .map((part) => t(part))
+                  .join(' / '),
               ellipsis: true,
             },
             {
-              title: '上次保存',
+              title: t('Last saved'),
               width: 175,
               render: (_, task) =>
                 task.lastSavedAt
-                  ? new Date(task.lastSavedAt).toLocaleString()
-                  : '尚未提交',
+                  ? new Date(task.lastSavedAt).toLocaleString(getLanguage())
+                  : t('Not submitted yet'),
             },
             {
-              title: '操作',
+              title: t('Actions'),
               width: 155,
               render: (_, task) => (
                 <div className="task-row-actions">
@@ -197,7 +212,9 @@ export default function TaskManagerPage() {
                     disabled={!!busy && busy !== task.id}
                     onClick={() => start(task.id)}
                   >
-                    {task.status === 'completed' ? '查看标注' : '进入标注'}
+                    {task.status === 'completed'
+                      ? t('View annotations')
+                      : t('Open annotation workspace')}
                   </Button>
                   <Dropdown
                     trigger={['click']}
@@ -205,29 +222,29 @@ export default function TaskManagerPage() {
                       items: [
                         {
                           key: 'detail',
-                          label: '查看数据与结果',
+                          label: t('View data and results'),
                           onClick: () => navigate(`/tasks/${task.id}`),
                         },
                         {
                           key: 'tools',
-                          label: '配置标注工具',
+                          label: t('Configure annotation tools'),
                           onClick: () =>
                             navigate(`/annotationTool?task=${task.id}`),
                         },
                         {
                           key: 'export',
-                          label: '导出数据与结果',
+                          label: t('Export data and results'),
                           onClick: () => setExportId(task.id),
                         },
                         {
                           key: 'edit',
-                          label: '编辑名称和说明',
+                          label: t('Edit name and instructions'),
                           onClick: () => setEditing(task),
                         },
                         { type: 'divider' },
                         {
                           key: 'delete',
-                          label: '删除任务',
+                          label: t('Delete task'),
                           danger: true,
                           onClick: () => setDeleting(task),
                         },
@@ -236,7 +253,7 @@ export default function TaskManagerPage() {
                   >
                     <Button
                       type="text"
-                      aria-label={`${task.name}的操作`}
+                      aria-label={t('Actions for {{v0}}', { v0: task.name })}
                       icon={<MoreOutlined />}
                     />
                   </Dropdown>
@@ -252,7 +269,7 @@ export default function TaskManagerPage() {
           onCancel={closeImport}
           onCreated={(count) => {
             closeImport();
-            message.success(`已创建 ${count} 个任务`);
+            message.success(t('Created {{v0}} tasks', { v0: count }));
           }}
         />
       )}
@@ -271,9 +288,9 @@ export default function TaskManagerPage() {
         <ExportTaskModal sessionId={exportId} onClose={() => setExportId('')} />
       )}
       <Modal
-        title="删除任务"
+        title={t('Delete task')}
         open={!!deleting}
-        okText="删除"
+        okText={t('Delete')}
         okButtonProps={{ danger: true }}
         confirmLoading={busy === 'delete'}
         onCancel={() => !busy && setDeleting(undefined)}
@@ -290,7 +307,9 @@ export default function TaskManagerPage() {
           }
         }}
       >
-        将删除任务“{deleting?.name}”及其标注结果。
+        {t('Delete task “{{name}}” and its annotation results.', {
+          name: deleting?.name,
+        })}
       </Modal>
     </TaskLayout>
   );

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 export type ExportMethod = 'download' | 'api' | 'storage';
 export interface ExportHeader {
   name: string;
@@ -21,7 +22,11 @@ export interface ExportSettings {
 }
 
 export const exportMethodLabels: Record<ExportMethod, string> = {
-  download: '本地下载',
+  get download() {
+    return t('Local download');
+  },
   api: 'API',
-  storage: '对象存储',
+  get storage() {
+    return t('Object storage');
+  },
 };

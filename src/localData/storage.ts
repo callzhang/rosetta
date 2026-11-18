@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   DataRecord,
   PublicAnnotationInput,
@@ -44,7 +45,9 @@ async function writeImport(
     estimate.usage != null &&
     data.totalSize * 1.1 > estimate.quota - estimate.usage
   )
-    throw new Error('浏览器可用空间不足，请减少本次导入数据量');
+    throw new Error(
+      t('The browser has insufficient storage. Import less data at a time'),
+    );
   const metadata = {
     id: data.id,
     name: data.name,
@@ -56,7 +59,8 @@ async function writeImport(
   try {
     let completed = 0;
     for (const entry of data.files) {
-      if (signal.aborted) throw new DOMException('已取消导入', 'AbortError');
+      if (signal.aborted)
+        throw new DOMException(t('Import canceled'), 'AbortError');
       await db.put('files', {
         url: localURL(data.id, entry.path),
         blob: entry.file,
@@ -66,7 +70,8 @@ async function writeImport(
       completed += entry.file.size;
       onProgress(Math.round((completed / data.totalSize) * 100));
     }
-    if (signal.aborted) throw new DOMException('已取消导入', 'AbortError');
+    if (signal.aborted)
+      throw new DOMException(t('Import canceled'), 'AbortError');
     await db.put('imports', { ...metadata, status: 'ready' });
   } catch (error) {
     await localTransaction(['files', 'imports'], async (tx) => {
@@ -88,7 +93,10 @@ export async function getLocalFile(url: string) {
   const pending = stagedFile(url);
   if (pending) return pending;
   const file = await (await database()).get('files', url);
-  if (!file) throw new Error(`本地文件不存在，请重新导入：${url}`);
+  if (!file)
+    throw new Error(
+      t('The local file is missing. Import it again: {{v0}}', { v0: url }),
+    );
   return file.blob;
 }
 
@@ -201,10 +209,14 @@ async function persistSession(
       const previous = await tx.objectStore('sessions').get(id);
       if (sessionRecords(input).length !== 1)
         throw new Error(
-          '每个任务必须且只能包含一条数据，请使用批量创建拆分数据',
+          t(
+            'Each task must contain exactly one data item. Use batch creation to split the data',
+          ),
         );
       if (options.requireExisting && !previous)
-        throw new Error('本地标注任务已被删除，请返回任务列表');
+        throw new Error(
+          t('This local annotation task was deleted. Return to the task list'),
+        );
       if (previous) checkRevision(previous, options.expectedRevision);
       const cloudSources = connectionProfiles(
         input,
@@ -288,7 +300,11 @@ async function persistSession(
 export async function loadSession(id: string) {
   const session = await (await database()).get('sessions', id);
   if (!session)
-    throw new Error('本地标注任务不存在，请返回独立标注工具重新打开');
+    throw new Error(
+      t(
+        'This local annotation task does not exist. Reopen it from the annotation tool',
+      ),
+    );
   return normalizeSession(session);
 }
 
@@ -306,7 +322,10 @@ async function updateSession(
     ['sessions', 'taskSummaries'],
     async (tx) => {
       const stored = await tx.objectStore('sessions').get(id);
-      if (!stored) throw new Error('本地标注任务已被删除，请返回任务列表');
+      if (!stored)
+        throw new Error(
+          t('This local annotation task was deleted. Return to the task list'),
+        );
       const value = normalizeSession(stored);
       update(value);
       value.updatedAt = Date.now();
@@ -323,7 +342,9 @@ async function updateSession(
 function checkRevision(session: AnnotationSession, expected?: number) {
   if (expected != null && session.contentRevision !== expected)
     throw new Error(
-      '任务数据或工具配置已更新，请刷新当前页面后继续。已有结果已保留。',
+      t(
+        'Task data or tool configuration has changed. Refresh this page to continue. Existing results have been preserved.',
+      ),
     );
 }
 
@@ -336,15 +357,16 @@ export interface NewTask {
 }
 
 export async function createTasks(tasks: NewTask[]) {
-  if (!tasks.length) throw new Error('请至少添加一个任务');
+  if (!tasks.length) throw new Error(t('Add at least one task'));
   const now = Date.now();
   const values = tasks.map((task) => {
     const name = task.name.trim();
-    if (!name) throw new Error('请输入任务名称');
-    if (name.length > 100) throw new Error('任务名称不能超过 100 个字符');
+    if (!name) throw new Error(t('Enter a task name'));
+    if (name.length > 100)
+      throw new Error(t('Task names cannot exceed 100 characters'));
     const description = task.description?.trim() || '';
     if (description.length > 2000)
-      throw new Error('任务说明不能超过 2000 个字符');
+      throw new Error(t('Task instructions cannot exceed 2,000 characters'));
     const input = structuredClone<PublicAnnotationInput>(
       task.input || {
         taskParams: { type: 'multiple', records: [], operators: [] },
@@ -352,7 +374,9 @@ export async function createTasks(tasks: NewTask[]) {
     );
     if (sessionRecords(input).length !== 1)
       throw new Error(
-        '每条数据任务必须且只能包含一条数据，请按单条数据拆分后导入',
+        t(
+          'Each data task must contain exactly one item. Split the data before importing',
+        ),
       );
     const importedResult =
       inputResults(input)[0] != null && task.submitted !== false;
@@ -391,7 +415,8 @@ export function updateTaskDetails(
   id: string,
   details: { name: string; description: string },
 ) {
-  if (!details.name.trim()) return Promise.reject(new Error('请输入任务名称'));
+  if (!details.name.trim())
+    return Promise.reject(new Error(t('Enter a task name')));
   return updateSession(id, (value) => {
     value.name = details.name.trim();
     value.description = details.description.trim();
@@ -402,7 +427,7 @@ export function startSession(id: string, expectedRevision?: number) {
   return updateSession(id, (value) => {
     checkRevision(value, expectedRevision);
     if (!sessionRecords(value.input).length)
-      throw new Error('请先为任务导入数据');
+      throw new Error(t('Import data into the task first'));
     value.status = 'in_progress';
   });
 }
@@ -421,7 +446,9 @@ export function saveSessionResult(
       index < 0 ||
       index >= sessionRecords(value.input).length
     )
-      throw new Error('标注数据位置无效，未覆盖已有结果');
+      throw new Error(
+        t('Invalid annotation data location. Existing results were preserved'),
+      );
     if (value.input.taskParams.type === 'include')
       value.input.taskResult = snapshot;
     else {
@@ -446,7 +473,10 @@ export async function saveSessionDraft(
     ['sessions', 'taskSummaries', 'files', 'imports'],
     async (tx) => {
       const stored = await tx.objectStore('sessions').get(id);
-      if (!stored) throw new Error('本地标注任务已被删除，请返回任务列表');
+      if (!stored)
+        throw new Error(
+          t('This local annotation task was deleted. Return to the task list'),
+        );
       checkRevision(stored, expectedRevision);
       const value = normalizeSession(stored);
       if (
@@ -454,7 +484,11 @@ export async function saveSessionDraft(
         snapshot.index < 0 ||
         snapshot.index >= sessionRecords(value.input).length
       )
-        throw new Error('标注数据位置无效，未覆盖已有结果');
+        throw new Error(
+          t(
+            'Invalid annotation data location. Existing results were preserved',
+          ),
+        );
       const result = snapshot.result;
       if (snapshot.segmentation) {
         const importId = `protection-${id}`;
@@ -466,7 +500,7 @@ export async function saveSessionDraft(
         await tx.objectStore('files').put({ url, blob, path, importId });
         await tx.objectStore('imports').put({
           id: importId,
-          name: '标注草稿分割数据',
+          name: t('Annotation draft segmentation data'),
           count: 1,
           totalSize: blob.size,
           status: 'ready',
@@ -526,7 +560,7 @@ export function saveSessionIndex(
 }
 
 export function renameSession(id: string, name: string) {
-  if (!name.trim()) return Promise.reject(new Error('请输入任务名称'));
+  if (!name.trim()) return Promise.reject(new Error(t('Enter a task name')));
   return updateSession(id, (value) => {
     value.name = name.trim();
   });
@@ -581,7 +615,9 @@ export async function removeSessionRecords(
   expectedRevision: number,
 ) {
   if (indices.length !== 1 || indices[0] !== 0)
-    throw new Error('每条任务只包含一条数据，请选择有效的数据任务');
+    throw new Error(
+      t('Each task contains one data item. Select a valid data task'),
+    );
   await deleteSession(id, expectedRevision);
 }
 

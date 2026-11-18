@@ -118,7 +118,7 @@ test('authorized preview saves keep task IDs and results after reloading the lau
     await deleteSession(saved[0].id);
     await assert.rejects(
       new QuickSession().restore(next.quickSession),
-      /不存在/,
+      /does not exist/i,
     );
   } finally {
     await deleteAnnotationPreview(next.id);
@@ -138,11 +138,11 @@ test('expired launches are removed and a failed launch commit does not leave a p
   const db = await openDB('annotation-tool-previews', 1);
   try {
     await db.put('previews', { ...value, expiresAt: Date.now() - 1 });
-    await assert.rejects(loadAnnotationPreview(value.id), /已过期/);
+    await assert.rejects(loadAnnotationPreview(value.id), /expired/i);
     assert.equal(await db.get('previews', value.id), undefined);
     await assert.rejects(
       prepareAnnotationPreview(input, 2, quick.snapshot(), []),
-      /选择/,
+      /Select/i,
     );
     const put = IDBObjectStore.prototype.put;
     const before = await db.count('previews');

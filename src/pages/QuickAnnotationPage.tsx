@@ -1,3 +1,5 @@
+import { LanguageSelect } from '../LanguageProvider';
+import { useLanguage, getLanguage, t } from '../i18n';
 import { ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
 import type {
   RosettaAnnotationDraft,
@@ -29,6 +31,7 @@ export default function QuickAnnotationPage({
 }: {
   preview: AnnotationPreview;
 }) {
+  useLanguage();
   const navigate = useNavigate();
   const editor = useRef<RosettaAnnotationHandle>(null);
   const [owner] = useState(() => ({}));
@@ -78,7 +81,7 @@ export default function QuickAnnotationPage({
       position: number,
       draft?: RosettaAnnotationDraft,
     ) => {
-      if (pending.current) throw new Error('正在保存，请稍后重试');
+      if (pending.current) throw new Error(t('Saving. Try again shortly'));
       pending.current = true;
       setSaving(true);
       try {
@@ -118,9 +121,9 @@ export default function QuickAnnotationPage({
       await editor.current.confirmSave(operationId);
       setSavedAt(Date.now());
       if (exportCurrent) setExportId(saved[0].id);
-      else message.success(`已保存 ${saved.length} 条任务`);
+      else message.success(t('Saved {{v0}} tasks', { v0: saved.length }));
     } catch (error) {
-      message.error((error as Error).message || '保存失败，请重试');
+      message.error((error as Error).message || t('Save failed. Try again'));
     } finally {
       pending.current = false;
       setSaving(false);
@@ -129,10 +132,10 @@ export default function QuickAnnotationPage({
   const records = sessionRecords(preview.input);
   function returnToConfiguration() {
     Modal.confirm({
-      title: '返回工具配置',
-      content: '返回配置前，请先保存标注。',
-      okText: '返回配置',
-      cancelText: '继续标注',
+      title: t('Back to tool configuration'),
+      content: t('Save the annotation before returning to configuration.'),
+      okText: t('Back to configuration'),
+      cancelText: t('Continue annotating'),
       onOk: () => {
         window.close();
         if (!window.closed) navigate('/annotationTool');
@@ -142,36 +145,40 @@ export default function QuickAnnotationPage({
   return (
     <div className="cloud-annotation-page annotation-focus-page">
       <header className="annotation-session-toolbar">
+        <LanguageSelect />
         <Button
           icon={<ArrowLeftOutlined />}
           disabled={saving}
           onClick={returnToConfiguration}
         >
-          返回工具配置
+          {t('Back to tool configuration')}
         </Button>
         <div className="annotation-session-context">
-          <small>数据标注</small>
+          <small>{t('Data annotation')}</small>
           <strong>{recordName(records[index])}</strong>
         </div>
         <span className="annotation-session-position">
-          数据 {index + 1} / {records.length}
+          {t('Data')}
+          {index + 1} / {records.length}
         </span>
         <span className="annotation-session-save" role="status">
           {saving
-            ? '正在保存…'
+            ? t('Saving…')
             : savedAt
-            ? `上次保存 ${new Date(savedAt).toLocaleTimeString()}`
-            : '结果保存在此浏览器'}
+            ? t('Last saved {{v0}}', {
+                v0: new Date(savedAt).toLocaleTimeString(getLanguage()),
+              })
+            : t('Results are stored in this browser')}
         </span>
         <Button disabled={saving || !ready} onClick={() => saveToTasks()}>
-          保存到任务
+          {t('Save as task')}
         </Button>
         <Button
           icon={<DownloadOutlined />}
           disabled={saving || !ready || blockingDialogOpen}
           onClick={() => saveToTasks(true)}
         >
-          导出当前数据
+          {t('Export current data')}
         </Button>
       </header>
       {error ? (

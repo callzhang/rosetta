@@ -71,12 +71,12 @@ test('protection saves a recoverable draft without completing the task and commi
   const previous = structuredClone(restored);
   await assert.rejects(
     () => saveSessionDraft(task.id, draft, task.contentRevision + 1),
-    /配置已更新/,
+    /configuration has changed/i,
   );
   await assert.rejects(
     () =>
       saveSessionDraft(task.id, { ...draft, index: 2 }, task.contentRevision),
-    /位置无效/,
+    /Invalid annotation data location/i,
   );
   assert.deepEqual(await loadSession(task.id), previous);
   await deleteSession(task.id);

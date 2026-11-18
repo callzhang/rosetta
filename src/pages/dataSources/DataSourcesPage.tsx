@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../i18n';
 import {
   CloudServerOutlined,
   MoreOutlined,
@@ -20,6 +21,7 @@ import { useSavedConnections } from '../../objectStorage/useSavedConnections';
 import TaskLayout from '../tasks/TaskLayout';
 
 export default function DataSourcesPage() {
+  useLanguage();
   const navigate = useNavigate();
   const { sources, loading, error } = useSavedConnections();
   const [query, setQuery] = useState('');
@@ -40,7 +42,11 @@ export default function DataSourcesPage() {
     try {
       const client = await createStorageClient(source.connection);
       await client.list({ prefix: source.connection.prefix, delimiter: '/' });
-      message.success(`「${source.name}」连接成功，目录可以读取`);
+      message.success(
+        t('Connected to “{{v0}}”. The directory is readable', {
+          v0: source.name,
+        }),
+      );
     } catch (error) {
       message.error(storageError(error));
     } finally {
@@ -54,19 +60,27 @@ export default function DataSourcesPage() {
   );
   return (
     <TaskLayout
-      actions={<Button onClick={() => navigate('/tasks')}>返回任务列表</Button>}
+      actions={
+        <Button onClick={() => navigate('/tasks')}>
+          {t('Back to task list')}
+        </Button>
+      }
     >
       <div className="task-page-heading">
         <div>
-          <h1>数据源</h1>
-          <p>保存对象存储连接，后续创建任务时直接选择。</p>
+          <h1>{t('Data sources')}</h1>
+          <p>
+            {t(
+              'Save object storage connections to select them when creating tasks.',
+            )}
+          </p>
         </div>
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => openForm()}
         >
-          新建数据源
+          {t('New data source')}
         </Button>
       </div>
       {error && (
@@ -82,7 +96,9 @@ export default function DataSourcesPage() {
             }}
             items={['all', 'oss', 'obs', 'tos'].map((value) => ({
               key: value,
-              label: `${value === 'all' ? '全部数据源' : value.toUpperCase()} ${
+              label: `${
+                value === 'all' ? t('All data sources') : value.toUpperCase()
+              } ${
                 matching.filter(
                   (source) =>
                     value === 'all' || source.connection.provider === value,
@@ -91,9 +107,9 @@ export default function DataSourcesPage() {
             }))}
           />
           <Input.Search
-            aria-label="搜索数据源"
+            aria-label={t('Search data sources')}
             allowClear
-            placeholder="搜索名称、Bucket 或目录"
+            placeholder={t('Search by name, bucket, or directory')}
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -115,25 +131,27 @@ export default function DataSourcesPage() {
             onChange: setPage,
             defaultPageSize: 10,
             showSizeChanger: true,
-            showTotal: (count) => `共 ${count} 个数据源`,
-            locale: { items_per_page: '条/页' },
+            showTotal: (count) => t('{{v0}} data sources', { v0: count }),
+            locale: { items_per_page: t('/page') },
           }}
           locale={{
             emptyText: sources.length ? (
-              '没有匹配的数据源'
+              t('No matching data sources')
             ) : (
               <div className="task-data-empty">
-                <strong>还没有保存的数据源</strong>
-                <p>添加 OSS、OBS 或 TOS 连接，后续直接选择使用。</p>
+                <strong>{t('No saved data sources yet')}</strong>
+                <p>
+                  {t('Add an OSS, OBS, or TOS connection to reuse it later.')}
+                </p>
                 <Button type="primary" onClick={() => openForm()}>
-                  新建数据源
+                  {t('New data source')}
                 </Button>
               </div>
             ),
           }}
           columns={[
             {
-              title: '数据源名称',
+              title: t('Data source name'),
               render: (_, source) => (
                 <div className="task-name-row">
                   <span className="task-folder-icon">
@@ -151,12 +169,12 @@ export default function DataSourcesPage() {
               ),
             },
             {
-              title: '类型',
+              title: t('Type'),
               width: 80,
               render: (_, source) => source.connection.provider.toUpperCase(),
             },
             {
-              title: 'Bucket / 起始目录',
+              title: t('Bucket / starting directory'),
               width: 240,
               render: (_, source) => (
                 <div className="data-source-location">
@@ -164,18 +182,18 @@ export default function DataSourcesPage() {
                     {source.connection.bucket}
                   </span>
                   <small title={source.connection.prefix}>
-                    {source.connection.prefix || 'Bucket 根目录'}
+                    {source.connection.prefix || t('Bucket root')}
                   </small>
                 </div>
               ),
             },
             {
-              title: '地域',
+              title: t('Region'),
               width: 130,
               render: (_, source) => source.connection.region,
             },
             {
-              title: '操作',
+              title: t('Actions'),
               width: 290,
               render: (_, source) => (
                 <div className="task-row-actions">
@@ -188,7 +206,7 @@ export default function DataSourcesPage() {
                       )
                     }
                   >
-                    批量创建任务
+                    {t('Batch create tasks')}
                   </Button>
                   <Button
                     type="text"
@@ -196,7 +214,7 @@ export default function DataSourcesPage() {
                     disabled={!!busyId}
                     onClick={() => openForm(source)}
                   >
-                    编辑
+                    {t('Edit')}
                   </Button>
                   <Dropdown
                     disabled={!!busyId}
@@ -206,14 +224,16 @@ export default function DataSourcesPage() {
                         {
                           key: 'test',
                           label:
-                            busyId === source.id ? '正在测试…' : '测试连接',
+                            busyId === source.id
+                              ? t('Testing…')
+                              : t('Test connection'),
                           onClick: () => void testConnection(source),
                         },
                         { type: 'divider' },
                         {
                           key: 'delete',
                           danger: true,
-                          label: '删除数据源',
+                          label: t('Delete data source'),
                           onClick: () => setDeleting(source),
                         },
                       ],
@@ -225,7 +245,7 @@ export default function DataSourcesPage() {
                       icon={<MoreOutlined />}
                       loading={busyId === source.id}
                     >
-                      更多
+                      {t('More')}
                     </Button>
                   </Dropdown>
                 </div>
@@ -236,7 +256,7 @@ export default function DataSourcesPage() {
       </div>
       {formOpen && (
         <Modal
-          title={editing ? '编辑数据源' : '新建数据源'}
+          title={editing ? t('Edit data source') : t('New data source')}
           open
           width={760}
           style={{ top: 32 }}
@@ -257,16 +277,16 @@ export default function DataSourcesPage() {
               setProvider('all');
               setQuery('');
               setPage(1);
-              message.success('数据源已保存');
+              message.success(t('Data source saved'));
             }}
           />
         </Modal>
       )}
       <Modal
-        title="删除数据源"
+        title={t('Delete data source')}
         open={!!deleting}
-        okText="删除数据源"
-        cancelText="保留"
+        okText={t('Delete data source')}
+        cancelText={t('Keep')}
         okButtonProps={{ danger: true }}
         confirmLoading={!!busyId}
         onCancel={() => !busyId && setDeleting(undefined)}
@@ -277,15 +297,19 @@ export default function DataSourcesPage() {
             await deleteSavedConnection(deleting.connection);
             setDeleting(undefined);
             setPage(1);
-            message.success('已删除本机数据源配置');
+            message.success(t('Local data source configuration deleted'));
           } catch (error) {
-            message.error((error as Error).message || '删除失败，请重试');
+            message.error(
+              (error as Error).message || t('Delete failed. Try again'),
+            );
           } finally {
             setBusyId('');
           }
         }}
       >
-        删除数据源「{deleting?.name}」的本地连接配置？
+        {t('Delete the local connection for “{{name}}”?', {
+          name: deleting?.name,
+        })}
       </Modal>
     </TaskLayout>
   );

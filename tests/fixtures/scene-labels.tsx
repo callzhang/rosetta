@@ -38,22 +38,10 @@ function Probe() {
 const root = createRoot(document.getElementById('root')!);
 root.render(<Probe />);
 const harness: SceneLabelsHarness = {
-  initialize: () =>
-    i18next.init({
-      lng: 'en-US',
-      fallbackLng: false,
-      initImmediate: false,
-      resources: {
-        'en-US': {
-          translation: {
-            自动标注: 'Auto labeling',
-            多语种ASR: 'Multilingual ASR',
-            自动驾驶: '',
-          },
-        },
-        'zh-CN': { translation: {} },
-      },
-    }),
+  initialize: () => {
+    i18next.addResource('en-US', 'translation', 'Autonomous driving', '');
+    return i18next.changeLanguage('en-US');
+  },
   changeLanguage: (language) => i18next.changeLanguage(language),
   renderCount: () => renders,
   unmount: () => root.unmount(),

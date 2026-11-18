@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 export type StorageProvider = 'oss' | 'obs' | 'tos';
 
 export interface StorageSource {
@@ -44,9 +45,15 @@ export interface StorageClient {
 }
 
 export const providerLabels: Record<StorageProvider, string> = {
-  oss: '阿里云 OSS',
-  obs: '华为云 OBS',
-  tos: '火山引擎 TOS',
+  get oss() {
+    return t('Alibaba Cloud OSS');
+  },
+  get obs() {
+    return t('Huawei Cloud OBS');
+  },
+  get tos() {
+    return t('Volcengine TOS');
+  },
 };
 export const defaultRegions: Record<StorageProvider, string> = {
   oss: 'cn-hangzhou',

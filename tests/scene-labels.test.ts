@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import type { SceneLabelsHarness } from './fixtures/scene-labels';
 import { createDOMFixture } from './support/dom';
 
-test('scene and instance names remain visible before translation initialization, update after readiness, and keep stable selection IDs', async () => {
+test('scene and instance names remain visible with an English default, update after language changes, and keep stable selection IDs', async () => {
   const bundle = await build({
     entryPoints: [
       fileURLToPath(new URL('./fixtures/scene-labels.tsx', import.meta.url)),
@@ -51,10 +51,11 @@ test('scene and instance names remain visible before translation initialization,
       'Uninitialized scene labels should render immediately',
     );
     assertVisibleLabels();
-    const categoryId = named('自动标注')!.dataset.id;
-    const instanceId = named('多语种ASR')!.dataset.id;
-    assert.ok(named('大模型'));
-    assert.ok(named('医疗多轮对话标注'));
+    const categoryId = named('Auto labeling')!.dataset.id;
+    const instanceId = named('Multilingual ASR')!.dataset.id;
+    assert.equal(named('Large language models'), undefined);
+    assert.equal(named('Medical multi-turn dialogue annotation'), undefined);
+    assert.equal(document.documentElement.lang, 'en-US');
 
     await window.sceneLabelsTest.initialize();
     await until(
@@ -65,8 +66,8 @@ test('scene and instance names remain visible before translation initialization,
     assert.equal(named('Auto labeling')!.dataset.id, categoryId);
     assert.equal(named('Multilingual ASR')!.dataset.id, instanceId);
     assert.ok(
-      named('自动驾驶'),
-      'An empty translation must fall back to its original name',
+      named('Autonomous driving'),
+      'An empty translation must fall back to its English source name',
     );
     assert.equal(named('大模型'), undefined);
 

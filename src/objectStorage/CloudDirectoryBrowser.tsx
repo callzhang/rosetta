@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../i18n';
 import {
   ArrowUpOutlined,
   FileOutlined,
@@ -27,6 +28,7 @@ export default function CloudDirectoryBrowser({
   disabled?: boolean;
   onChange: (value?: CloudDirectorySelection) => void;
 }) {
+  useLanguage();
   const [connected, setConnected] = useState<ConnectedStorage>();
   const [prefix, setPrefix] = useState('');
   const [draft, setDraft] = useState('');
@@ -48,7 +50,9 @@ export default function CloudDirectoryBrowser({
     if (!connected || disabled) return;
     const next = directoryPrefix(value);
     if (!next.startsWith(connected.source.prefix)) {
-      setError('请在数据源的起始目录内选择');
+      setError(
+        t("Select a directory within the data source's starting directory"),
+      );
       setDraft(prefix);
       onChange({ connected, prefix });
       return;
@@ -65,7 +69,9 @@ export default function CloudDirectoryBrowser({
       });
       if (current !== request.current) return;
       if (append && result.nextCursor && result.nextCursor === page.nextCursor)
-        throw new Error('目录分页标记重复，请重新打开目录');
+        throw new Error(
+          t('Repeated directory pagination token. Open the directory again'),
+        );
       setPrefix(next);
       setDraft(next);
       setPage(
@@ -142,7 +148,7 @@ export default function CloudDirectoryBrowser({
             onChange(undefined);
           }}
         >
-          更换数据源
+          {t('Change data source')}
         </Button>
       </div>
       <div className="cloud-directory-path">
@@ -151,10 +157,10 @@ export default function CloudDirectoryBrowser({
           disabled={disabled || busy || prefix === connected.source.prefix}
           onClick={() => browse(prefix.replace(/[^/]+\/$/, ''))}
         >
-          上一级
+          {t('Parent directory')}
         </Button>
         <Input
-          aria-label="对象存储目录"
+          aria-label={t('Object storage directory')}
           disabled={disabled || busy}
           value={draft}
           onChange={(event) => {
@@ -164,14 +170,14 @@ export default function CloudDirectoryBrowser({
             );
           }}
           onPressEnter={() => browse(draft)}
-          placeholder="目录前缀，留空为 Bucket 根目录"
+          placeholder={t('Directory prefix; leave blank for the bucket root')}
         />
         <Button
           loading={busy}
           disabled={disabled}
           onClick={() => browse(draft)}
         >
-          打开目录
+          {t('Open directory')}
         </Button>
       </div>
       <Table
@@ -181,10 +187,10 @@ export default function CloudDirectoryBrowser({
         loading={busy}
         pagination={false}
         scroll={{ y: 220 }}
-        locale={{ emptyText: '当前目录为空' }}
+        locale={{ emptyText: t('This directory is empty') }}
         columns={[
           {
-            title: '名称',
+            title: t('Name'),
             dataIndex: 'name',
             render: (name, row) =>
               row.directory ? (
@@ -202,7 +208,7 @@ export default function CloudDirectoryBrowser({
               ),
           },
           {
-            title: '大小',
+            title: t('Size'),
             width: 110,
             render: (_, row) => (row.directory ? '—' : formatSize(row.size)),
           },
@@ -214,7 +220,7 @@ export default function CloudDirectoryBrowser({
           disabled={disabled || busy}
           onClick={() => browse(prefix, true)}
         >
-          加载更多
+          {t('Load more')}
         </Button>
       )}
       {error && (

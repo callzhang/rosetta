@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../../i18n';
 import {
   FileOutlined,
   PlayCircleOutlined,
@@ -32,6 +33,7 @@ export default observer(function DataPreview({
   store: PublicAnnotationToolStore;
   onAnnotate: () => void;
 }) {
+  useLanguage();
   const record = store.records[store.activeRecordIndex];
   const kind = kindFromRecord(record);
   const [selected, setSelected] = useState<{
@@ -73,9 +75,12 @@ export default observer(function DataPreview({
   }, [url, inline, kind, run, cancel]);
   const current = data?.key === url ? data : undefined;
   return (
-    <aside className="annotation-preview-panel" aria-label="数据预览与文件列表">
+    <aside
+      className="annotation-preview-panel"
+      aria-label={t('Data preview and file list')}
+    >
       <div className="data-preview-heading">
-        <strong>数据预览</strong>
+        <strong>{t('Data preview')}</strong>
         <span>{record?.attachmentType}</span>
       </div>
       <div className="data-preview-body">
@@ -83,9 +88,9 @@ export default observer(function DataPreview({
           <div className="data-preview-placeholder">
             <RadarChartOutlined />
             <strong>{recordName(record)}</strong>
-            <span>支持旋转、缩放与三维标注</span>
+            <span>{t('Supports rotation, zoom, and 3D annotation')}</span>
             <Button onClick={onAnnotate} icon={<PlayCircleOutlined />}>
-              打开 3D 标注视图
+              {t('Open 3D annotation view')}
             </Button>
           </div>
         ) : loading ? (
@@ -93,7 +98,7 @@ export default observer(function DataPreview({
         ) : error ? (
           <Alert
             type="error"
-            message="无法预览当前文件"
+            message={t('Cannot preview this file')}
             description={error.message}
           />
         ) : inline ? (
@@ -109,9 +114,9 @@ export default observer(function DataPreview({
         ) : (
           <div className="data-preview-placeholder">
             <FileOutlined />
-            <span>{record ? recordName(record) : '请先选择数据'}</span>
+            <span>{record ? recordName(record) : t('Select data first')}</span>
             <Button disabled={!record} onClick={onAnnotate}>
-              在标注视图中查看
+              {t('View in annotation workspace')}
             </Button>
           </div>
         )}

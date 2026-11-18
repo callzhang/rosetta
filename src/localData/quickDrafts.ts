@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import type { NewTask } from './storage';
 import { appendTaskInput } from './taskInput';
@@ -13,7 +14,7 @@ const drafts = new Map<
 >();
 
 export function prepareQuickDraft(tasks: NewTask[], owner: object) {
-  if (!tasks.length) throw new Error('请先选择需要预览的数据');
+  if (!tasks.length) throw new Error(t('Select data to preview first'));
   const id = crypto.randomUUID();
   const input = tasks
     .slice(1)
@@ -30,7 +31,10 @@ export function prepareQuickDraft(tasks: NewTask[], owner: object) {
 }
 export function takeQuickDraft(id: string, owner: object) {
   const draft = drafts.get(id);
-  if (!draft) throw new Error('这份临时预览已结束，请重新选择文件。');
+  if (!draft)
+    throw new Error(
+      t('This temporary preview has ended. Select the files again.'),
+    );
   drafts.delete(id);
   adoptStagedImports(draft.owner, owner);
   return draft;

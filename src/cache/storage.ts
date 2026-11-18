@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { decode, encode } from '@msgpack/msgpack';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { wrap } from 'idb';
@@ -21,7 +22,8 @@ type CacheStore = IDBPObjectStore<
 const useStore = createStore('keyval-store', 'keyval');
 
 function readMetadata(value: unknown): CacheItem[] {
-  if (!Array.isArray(value)) throw new Error('本地缓存索引格式不正确');
+  if (!Array.isArray(value))
+    throw new Error(t('The local cache index is invalid'));
   return value.map((item: unknown) => {
     if (
       !item ||
@@ -31,7 +33,7 @@ function readMetadata(value: unknown): CacheItem[] {
       !('name' in item) ||
       typeof item.name !== 'string'
     )
-      throw new Error('本地缓存索引格式不正确');
+      throw new Error(t('The local cache index is invalid'));
     const entry = item as CacheItem;
     return {
       id: entry.id,

@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../i18n';
 import { Button, Link } from '@stardustai/annotation-client';
 import { Alert, Select, Spin } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +17,7 @@ export default function CloudSourcePicker({
   initialSourceId?: string;
   onConnected: (value: ConnectedStorage) => void;
 }) {
+  useLanguage();
   const { sources, loading, error: loadError } = useSavedConnections();
   const [selectedId, setSelectedId] = useState<string | undefined>(
     initialSourceId,
@@ -56,7 +58,8 @@ export default function CloudSourcePicker({
     if (initialSourceId) {
       started.current = true;
       if (saved) void connect(saved);
-      else setError('这个数据源已被删除，请选择其他数据源');
+      else
+        setError(t('This data source was deleted. Select another data source'));
     } else if (
       !sources.some((source) => source.id === selectedId) &&
       sources[0]
@@ -74,15 +77,15 @@ export default function CloudSourcePicker({
     <div className="cloud-source-picker">
       {!creating && sources.length > 0 ? (
         <>
-          <label>选择已保存的数据源</label>
+          <label>{t('Select a saved data source')}</label>
           <div className="cloud-source-picker-row">
             <Select
-              aria-label="选择已保存的数据源"
+              aria-label={t('Select a saved data source')}
               showSearch
               optionFilterProp="label"
               value={selectedId}
               disabled={busy}
-              placeholder="选择数据源"
+              placeholder={t('Select data source')}
               options={sources.map((source) => ({
                 value: source.id,
                 label: `${
@@ -107,7 +110,7 @@ export default function CloudSourcePicker({
                 if (saved) void connect(saved);
               }}
             >
-              打开数据源
+              {t('Open data source')}
             </Button>
           </div>
           <div className="cloud-source-picker-links">
@@ -116,16 +119,16 @@ export default function CloudSourcePicker({
               disabled={busy}
               onClick={() => setCreating(true)}
             >
-              使用新连接
+              {t('Use a new connection')}
             </Button>
-            <Link to="/dataSources">管理数据源</Link>
+            <Link to="/dataSources">{t('Manage data sources')}</Link>
           </div>
         </>
       ) : (
         <>
           {sources.length > 0 && (
             <Button className="mb-4" onClick={() => setCreating(false)}>
-              返回已保存的数据源
+              {t('Back to saved data sources')}
             </Button>
           )}
           <CloudConnectionForm

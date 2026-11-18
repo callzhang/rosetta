@@ -1,3 +1,5 @@
+import { AlgorithmEditor, OperatorsEditor } from '../../annotationService';
+import { useLanguage, getLanguage, t } from '../../i18n';
 import {
   ArrowRightOutlined,
   DatabaseOutlined,
@@ -5,17 +7,14 @@ import {
   EyeOutlined,
 } from '@ant-design/icons';
 import {
-  AlgorithmEditor,
   Button,
   GlobalSpinner,
   message,
-  OperatorsEditor,
   useNavigate,
   useSearchParams,
 } from '@stardustai/annotation-client';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { Alert, Modal, Select, Tooltip } from 'antd';
-import i18next from 'i18next';
 import { debounce } from 'lodash';
 import { reaction, toJS } from 'mobx';
 import { observer } from 'mobx-react';
@@ -34,9 +33,13 @@ import {
   formatType,
   PublicAnnotationToolStore,
 } from './PublicAnnotationToolStore';
-const JsonEditor = lazy(() => import('./JSONEdit'));
+const JsonEditor = lazy(() => {
+  useLanguage();
+  return import('./JSONEdit');
+});
 const PublicAnnotationJSONEditor = observer(
   ({ store }: { store: PublicAnnotationToolStore }) => {
+    useLanguage();
     const jsonEditorRef = useRef<ElementRef<typeof JsonEditor>>(null);
     return (
       <Suspense fallback={<GlobalSpinner />}>
@@ -50,30 +53,34 @@ const PublicAnnotationJSONEditor = observer(
   },
 );
 const PublicAnnotationOperatorsEditor = observer(
-  ({ store }: { store: PublicAnnotationToolStore }) => (
-    <div className="annotation-operator-editor">
-      {store.records.length ? (
-        <OperatorsEditor
-          input={toJS(store.input)}
-          initialIndex={store.activeRecordIndex}
-          onInputChange={(input) => store.setData(input, true)}
-          onProtectionSave={async () => {
-            store.setDataWithString.flush();
-            if (store.error) throw store.error;
-            await store.persistProtectionDraft();
-          }}
-        />
-      ) : (
-        <div className="annotation-tools-empty rounded-lg bg-white dark:bg-gray-900">
-          {i18next.t('上传数据后自动匹配标注工具')}
-        </div>
-      )}
-    </div>
-  ),
+  ({ store }: { store: PublicAnnotationToolStore }) => {
+    useLanguage();
+    return (
+      <div className="annotation-operator-editor">
+        {store.records.length ? (
+          <OperatorsEditor
+            input={toJS(store.input)}
+            initialIndex={store.activeRecordIndex}
+            onInputChange={(input) => store.setData(input, true)}
+            onProtectionSave={async () => {
+              store.setDataWithString.flush();
+              if (store.error) throw store.error;
+              await store.persistProtectionDraft();
+            }}
+          />
+        ) : (
+          <div className="annotation-tools-empty rounded-lg bg-white dark:bg-gray-900">
+            {t('Upload data to automatically match annotation tools')}
+          </div>
+        )}
+      </div>
+    );
+  },
 );
 export const PublicAnnotationAlgoEditor = observer(
-  ({ store }: { store: PublicAnnotationToolStore }) =>
-    store.records.length ? (
+  ({ store }: { store: PublicAnnotationToolStore }) => {
+    useLanguage();
+    return store.records.length ? (
       <AlgorithmEditor
         input={toJS(store.input)}
         initialIndex={store.activeRecordIndex}
@@ -81,22 +88,24 @@ export const PublicAnnotationAlgoEditor = observer(
       />
     ) : (
       <div className="annotation-tools-empty rounded-lg bg-white dark:bg-gray-900">
-        {i18next.t('上传数据后配置算法辅助')}
+        {t('Upload data to configure algorithm assistance')}
       </div>
-    ),
+    );
+  },
 );
 const formatTypeToName = (format: formatType) => {
   switch (format) {
     case formatType.OperatorEditor:
-      return i18next.t('标注工具');
+      return t('Annotation tools');
     case formatType.AlgoEditor:
-      return i18next.t('算法辅助');
+      return t('Algorithm assistance');
     case formatType.JSON:
-      return i18next.t('JSON');
+      return t('JSON');
   }
 };
 
 const PublicAnnotationTool = observer(function () {
+  useLanguage();
   const [store] = useState(() => new PublicAnnotationToolStore());
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -168,7 +177,11 @@ const PublicAnnotationTool = observer(function () {
           await store.persistConfiguration(input, id);
           setConfigSavedAt(Date.now());
         } catch (error) {
-          message.error(`任务配置保存失败：${(error as Error).message}`);
+          message.error(
+            t('Failed to save task configuration: {{v0}}', {
+              v0: (error as Error).message,
+            }),
+          );
         } finally {
           setConfigSaving(false);
         }
@@ -212,7 +225,10 @@ const PublicAnnotationTool = observer(function () {
         };
       });
     } catch (error) {
-      message.error((error as Error).message || '无法打开标注页面，请重试');
+      message.error(
+        (error as Error).message ||
+          t('Cannot open the annotation page. Try again'),
+      );
     } finally {
       setBusy(false);
     }
@@ -232,9 +248,9 @@ const PublicAnnotationTool = observer(function () {
     setBusy(true);
     try {
       await saveConfiguration();
-      message.success('已保存到本机任务');
+      message.success(t('Saved as a local task'));
     } catch (error) {
-      message.error((error as Error).message || '保存失败，请重试');
+      message.error((error as Error).message || t('Save failed. Try again'));
     } finally {
       setBusy(false);
     }
@@ -263,9 +279,9 @@ const PublicAnnotationTool = observer(function () {
   }
   function reset() {
     Modal.confirm({
-      title: '更换数据',
-      content: '更换前请保存当前数据和标注。',
-      okText: '更换数据',
+      title: t('Change data'),
+      content: t('Save the current data and annotations before changing data.'),
+      okText: t('Change data'),
       onOk: () => {
         store.resetCustom();
         setSavedCount(0);
@@ -278,10 +294,10 @@ const PublicAnnotationTool = observer(function () {
     if (configSavedAt) return Promise.resolve(true);
     return new Promise((resolve) => {
       Modal.confirm({
-        title: '离开当前标注数据？',
-        content: '请先保存到任务，避免丢失当前修改。',
-        okText: '离开工作区',
-        cancelText: '继续编辑',
+        title: t('Leave the current annotation data?'),
+        content: t('Save as a task first to keep your changes.'),
+        okText: t('Leave workspace'),
+        cancelText: t('Continue editing'),
         onOk: () => {
           resolve(true);
         },
@@ -306,7 +322,9 @@ const PublicAnnotationTool = observer(function () {
           showIcon
           message={taskError}
           action={
-            <Button onClick={() => navigate('/tasks')}>返回任务列表</Button>
+            <Button onClick={() => navigate('/tasks')}>
+              {t('Back to task list')}
+            </Button>
           }
         />
       </TaskLayout>
@@ -318,7 +336,7 @@ const PublicAnnotationTool = observer(function () {
     <TaskLayout
       task={
         store.managedTask && store.sessionId
-          ? { id: store.sessionId, name: store.taskName || '当前任务' }
+          ? { id: store.sessionId, name: store.taskName || t('Current task') }
           : undefined
       }
       section="configuration"
@@ -333,9 +351,9 @@ const PublicAnnotationTool = observer(function () {
       }
       actions={
         <>
-          <Tooltip title="数据缓存管理">
+          <Tooltip title={t('Data cache management')}>
             <Button
-              aria-label="数据缓存管理"
+              aria-label={t('Data cache management')}
               icon={<DatabaseOutlined />}
               onClick={() => setShowCacheManager(true)}
             />
@@ -346,17 +364,21 @@ const PublicAnnotationTool = observer(function () {
         <>
           <div className="workspace-footer-note">
             <strong>
-              {store.records.length} 条数据
-              {savedCount ? ` · 已保存 ${savedCount} 条任务` : ''}
+              {t('{{count}} records', { count: store.records.length })}
+              {savedCount ? t(' · {{v0}} tasks saved', { v0: savedCount }) : ''}
             </strong>
             <span>
               {configSaving
-                ? '正在保存配置…'
+                ? t('Saving configuration…')
                 : configSavedAt
-                ? `已保存 · ${new Date(configSavedAt).toLocaleTimeString()}`
+                ? t('Saved · {{v0}}', {
+                    v0: new Date(configSavedAt).toLocaleTimeString(
+                      getLanguage(),
+                    ),
+                  })
                 : store.managedTask
-                ? '配置自动保存到本机'
-                : '数据尚未保存到任务'}
+                ? t('Configuration is saved automatically on this device')
+                : t('Data has not been saved as a task')}
             </span>
           </div>
           <Button
@@ -364,14 +386,15 @@ const PublicAnnotationTool = observer(function () {
             loading={busy}
             onClick={saveToTasks}
           >
-            {store.managedTask ? '保存配置' : '保存到任务'}
+            {store.managedTask ? t('Save configuration') : t('Save as task')}
           </Button>
           <Button
             type="primary"
             disabled={busy || !hasData}
             onClick={startAnnotation}
           >
-            开始标注 <ArrowRightOutlined />
+            {t('Start annotating')}
+            <ArrowRightOutlined />
           </Button>
         </>
       }
@@ -395,7 +418,7 @@ const PublicAnnotationTool = observer(function () {
           <div>
             {store.records.length > 1 && (
               <Select
-                aria-label="选择当前数据"
+                aria-label={t('Select current data')}
                 value={store.activeRecordIndex}
                 disabled={busy}
                 options={store.records.map((record, index) => ({
@@ -409,7 +432,7 @@ const PublicAnnotationTool = observer(function () {
             )}
             {!store.managedTask && (
               <Button size="small" disabled={busy} onClick={reset}>
-                更换数据
+                {t('Change data')}
               </Button>
             )}
           </div>
@@ -419,13 +442,13 @@ const PublicAnnotationTool = observer(function () {
         <div
           className="annotation-configuration-view"
           role="tabpanel"
-          aria-label="工具配置与数据预览"
+          aria-label={t('Tool configuration and data preview')}
         >
           <div className="annotation-config-toolbar">
             <div
               className="annotation-config-tabs"
               role="tablist"
-              aria-label="标注工具配置"
+              aria-label={t('Annotation tool configuration')}
             >
               {[
                 formatType.OperatorEditor,
@@ -449,7 +472,9 @@ const PublicAnnotationTool = observer(function () {
               aria-expanded={previewOpen}
               onClick={() => setPreviewOpen((open) => !open)}
             >
-              {previewOpen ? '收起数据与文件' : '查看数据与文件'}
+              {previewOpen
+                ? t('Collapse data and files')
+                : t('View data and files')}
             </Button>
           </div>
           <div

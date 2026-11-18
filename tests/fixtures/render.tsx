@@ -1,3 +1,4 @@
+import { setLanguage } from '../../src/i18n';
 import { applicationRoot } from '../../src/main';
 import { history } from '@stardustai/annotation-client';
 import { buildLocalImport } from '../../src/localData/files';
@@ -11,6 +12,7 @@ import { createDefaultOperators } from '../../src/localData/presets';
 import { Modal } from 'antd';
 
 globalThis.hostTest = {
+  setLanguage,
   confirm: () => Modal.confirm({ title: '确认操作', content: '深色弹窗检查' }),
   async createLocalTask(name = 'iframe task') {
     const local = buildLocalImport(

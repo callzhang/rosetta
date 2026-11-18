@@ -1,6 +1,6 @@
+import { useLanguage, t } from '../../../i18n';
 import { Tree } from 'antd';
 import type { DataNode } from 'antd/es/tree';
-import i18next from 'i18next';
 import { observer } from 'mobx-react';
 import { useEffect, useRef, useState } from 'react';
 import type { DataFileNode } from '../../../localData/fileTree';
@@ -27,6 +27,7 @@ export default observer(function DataOverview({
   records?: DataRecord[];
   onSelectFile?: (url: string) => void;
 }) {
+  useLanguage();
   const listRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
   const { tree, count } = buildFileTree(records);
@@ -42,18 +43,18 @@ export default observer(function DataOverview({
   return (
     <aside
       className="annotation-data-overview rounded-lg bg-white dark:bg-gray-900"
-      aria-label={i18next.t('数据文件列表')}
+      aria-label={t('Data file list')}
     >
       <div className="data-files-heading">
-        <span>{i18next.t('文件列表')}</span>
+        <span>{t('File list')}</span>
         <span className="data-files-count">
-          {i18next.t('{{count}} 个文件', { count })}
+          {t('{{count}} files', { count })}
         </span>
       </div>
       {count > 0 && (
         <div className="data-files-summary">
-          {kinds.map((kind) => i18next.t(dataKindLabels[kind!])).join(' / ')} ·{' '}
-          {i18next.t('{{count}} 条数据', { count: records.length })}
+          {kinds.map((kind) => t(dataKindLabels[kind!])).join(' / ')} ·{' '}
+          {t('{{count}} records', { count: records.length })}
         </div>
       )}
       <div className="data-file-list" ref={listRef}>
@@ -74,7 +75,7 @@ export default observer(function DataOverview({
             treeData={tree.map(fileNode)}
           />
         ) : (
-          <div className="data-files-empty">{i18next.t('尚未上传文件')}</div>
+          <div className="data-files-empty">{t('No files uploaded yet')}</div>
         )}
       </div>
     </aside>

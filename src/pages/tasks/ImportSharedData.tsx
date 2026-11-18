@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { Button, message, validateSchema } from '@stardustai/annotation-client';
 import { Alert } from 'antd';
@@ -12,16 +13,19 @@ export default function ImportSharedData({
 }: {
   input: PublicAnnotationInput;
 }) {
+  useLanguage();
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState('');
   const count = sessionRecords(input).length;
   return (
     <div className="cloud-access-page">
       <div className="cloud-access-form">
-        <h2>导入共享数据</h2>
+        <h2>{t('Import shared data')}</h2>
         <p>
-          这份标注数据包含 {count} 条数据，将分别创建 {count} 个任务。
-          一同导入工具配置和标注结果。
+          {t(
+            'This shared data contains {{count}} records and will create {{count}} tasks, including tool configuration and annotation results.',
+            { count },
+          )}
         </p>
         <Button
           type="primary"
@@ -35,10 +39,10 @@ export default function ImportSharedData({
               const check = validateSchema('PublicAnnotationInput', input);
               if (!check.valid) throw new Error(check.errorMessage);
               const tasks = await createTasks(
-                tasksFromInput(input, '共享数据'),
+                tasksFromInput(input, t('Shared data')),
               );
               await openSavedAnnotation(tasks[0].id, null);
-              message.success(`已创建 ${tasks.length} 个任务`);
+              message.success(t('Created {{v0}} tasks', { v0: tasks.length }));
             } catch (error) {
               setFailure((error as Error).message);
             } finally {
@@ -46,7 +50,7 @@ export default function ImportSharedData({
             }
           }}
         >
-          导入为任务并标注
+          {t('Import as tasks and annotate')}
         </Button>
         {failure && (
           <Alert className="mt-3" type="error" showIcon message={failure} />

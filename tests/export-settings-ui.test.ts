@@ -73,9 +73,15 @@ test(
       'http://127.0.0.1:4174/exportSettings',
     );
     const switchTo = (method) => {
-      const labels = { download: '本地下载', api: 'API', storage: '对象存储' };
+      const labels = {
+        download: 'Local download',
+        api: 'API',
+        storage: 'Object storage',
+      };
       const item = [...document.querySelectorAll('.ant-segmented-item')].find(
-        (node) => node.textContent.replace(/\s/g, '') === labels[method],
+        (node) =>
+          node.textContent.replace(/\s/g, '') ===
+          labels[method].replace(/\s/g, ''),
       );
       assert.ok(item, `Missing switch option: ${method}`);
       item.querySelector('input').click();
@@ -86,14 +92,19 @@ test(
         () => document.querySelector('.export-settings-local'),
         'Local download panel should render first',
       );
-      assert.equal(document.querySelector('[aria-label="API 导出配置"]'), null);
       assert.equal(
-        document.querySelector('[aria-label="对象存储导出配置"]'),
+        document.querySelector('[aria-label="API export configuration"]'),
+        null,
+      );
+      assert.equal(
+        document.querySelector(
+          '[aria-label="Object storage export configuration"]',
+        ),
         null,
       );
       switchTo('api');
       await until(
-        () => document.querySelector('[aria-label="API 导出配置"]'),
+        () => document.querySelector('[aria-label="API export configuration"]'),
         'API switch should reveal its configuration',
       );
       const input = document.querySelector<HTMLInputElement>(
@@ -104,10 +115,16 @@ test(
       await delay(30);
       switchTo('storage');
       await until(
-        () => document.querySelector('[aria-label="对象存储导出配置"]'),
+        () =>
+          document.querySelector(
+            '[aria-label="Object storage export configuration"]',
+          ),
         'Storage switch should reveal its configuration',
       );
-      assert.equal(document.querySelector('[aria-label="API 导出配置"]'), null);
+      assert.equal(
+        document.querySelector('[aria-label="API export configuration"]'),
+        null,
+      );
       switchTo('api');
       await until(
         () =>
@@ -128,7 +145,7 @@ test(
         'Return to local download',
       );
       [...document.querySelectorAll('button')]
-        .find((node) => node.textContent.replace(/\s/g, '') === '保存设置')
+        .find((node) => node.textContent.trim() === 'Save settings')
         .click();
       await until(
         () => window.savedSettings,

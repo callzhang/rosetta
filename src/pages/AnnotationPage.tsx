@@ -1,3 +1,5 @@
+import { LanguageSelect } from '../LanguageProvider';
+import { useLanguage, getLanguage, t } from '../i18n';
 import {
   ArrowLeftOutlined,
   DownloadOutlined,
@@ -93,18 +95,23 @@ async function readInput() {
       )
     ).json();
   else input = JSON.parse(decodeURIComponent(hash.slice(1)));
-  if (!input) throw new Error('没有找到标注数据，请从任务列表重新打开');
+  if (!input)
+    throw new Error(
+      t('Annotation data was not found. Reopen it from the task list'),
+    );
   const check = validateSchema('PublicAnnotationInput', input);
   if (!check.valid) throw new Error(check.errorMessage);
   return { incoming: input };
 }
 
 export default function AnnotationPage() {
+  useLanguage();
   const location = useLocation();
   return <AnnotationSessionPage key={location.hash} />;
 }
 
 function AnnotationSessionPage() {
+  useLanguage();
   const navigate = useNavigate();
   const isPreview = useLocation().hash.startsWith('#preview/');
   const [session, setSession] = useState<AnnotationSession>();
@@ -122,7 +129,7 @@ function AnnotationSessionPage() {
   const ordered = [...tasks].sort(
     (a, b) =>
       a.createdAt - b.createdAt ||
-      a.name.localeCompare(b.name, 'zh-CN', { numeric: true }) ||
+      a.name.localeCompare(b.name, getLanguage(), { numeric: true }) ||
       a.id.localeCompare(b.id),
   );
   const position = ordered.findIndex((task) => task.id === session?.id);
@@ -130,9 +137,9 @@ function AnnotationSessionPage() {
     setTaskListOpen(false);
     if (id === session?.id) return;
     Modal.confirm({
-      title: '切换标注数据',
-      content: '请先提交当前标注，再切换任务。',
-      okText: '切换数据',
+      title: t('Switch annotation data'),
+      content: t('Submit the current annotation before switching tasks.'),
+      okText: t('Switch data'),
       onOk: () => openSavedAnnotation(id, null),
     });
   }
@@ -207,7 +214,10 @@ function AnnotationSessionPage() {
   );
   const saveBeforeProtectionExit = useCallback(
     async (draft: RosettaAnnotationDraft) => {
-      if (!session) throw new Error('任务尚未加载完成，请稍后重试');
+      if (!session)
+        throw new Error(
+          t('The task has not finished loading. Try again later'),
+        );
       await saveSessionDraft(session.id, draft, session.contentRevision);
     },
     [session?.id, session?.contentRevision],
@@ -216,6 +226,7 @@ function AnnotationSessionPage() {
   const header = (
     <>
       <header className="annotation-session-toolbar">
+        <LanguageSelect />
         <Button
           icon={<ArrowLeftOutlined />}
           disabled={saving}
@@ -225,25 +236,31 @@ function AnnotationSessionPage() {
               navigate(isPreview ? '/annotationTool' : '/tasks');
           }}
         >
-          {isPreview ? '返回工具配置' : '返回任务列表'}
+          {isPreview ? t('Back to tool configuration') : t('Back to task list')}
         </Button>
         <div className="annotation-session-context">
-          <small>{isPreview ? '数据标注' : '任务标注'}</small>
+          <small>
+            {isPreview ? t('Data annotation') : t('Task annotation')}
+          </small>
           <strong title={session?.name}>
-            {session?.name || (isPreview ? '正在打开标注数据' : '正在打开任务')}
+            {session?.name ||
+              (isPreview ? t('Opening annotation data') : t('Opening task'))}
           </strong>
         </div>
         {session && (
           <span className="annotation-session-position">
-            任务 {Math.max(0, position) + 1} / {ordered.length || 1}
+            {t('Task')}
+            {Math.max(0, position) + 1} / {ordered.length || 1}
           </span>
         )}
         <span className="annotation-session-save" role="status">
           {saving
-            ? '正在保存结果…'
+            ? t('Saving results…')
             : savedAt
-            ? `上次提交 ${new Date(savedAt).toLocaleTimeString()}`
-            : '标注结果在提交后保存'}
+            ? t('Last submitted {{v0}}', {
+                v0: new Date(savedAt).toLocaleTimeString(getLanguage()),
+              })
+            : t('Annotation results are saved after submission')}
         </span>
         {session && (
           <>
@@ -251,13 +268,13 @@ function AnnotationSessionPage() {
               disabled={saving || blockingDialogOpen}
               onClick={() => setTaskListOpen(true)}
             >
-              任务列表
+              {t('Task list')}
             </Button>
             <Button
               disabled={saving || position <= 0}
               onClick={() => changeData(ordered[position - 1].id)}
             >
-              上一条
+              {t('Previous')}
             </Button>
             <Button
               disabled={
@@ -265,14 +282,14 @@ function AnnotationSessionPage() {
               }
               onClick={() => changeData(ordered[position + 1].id)}
             >
-              下一条
+              {t('Next')}
             </Button>
             <Button
               icon={<DownloadOutlined />}
               disabled={saving || blockingDialogOpen}
               onClick={() => setExportOpen(true)}
             >
-              导出
+              {t('Export')}
             </Button>
             {!!sources.length && (
               <Dropdown
@@ -284,7 +301,9 @@ function AnnotationSessionPage() {
                       ? [
                           ...sources.map((source) => ({
                             key: `${source.provider}:${source.bucket}`,
-                            label: `更新连接 · ${source.bucket}`,
+                            label: t('Update connection · {{v0}}', {
+                              v0: source.bucket,
+                            }),
                             onClick: () => setEditingSource(source),
                           })),
                         ]
@@ -292,7 +311,10 @@ function AnnotationSessionPage() {
                   ],
                 }}
               >
-                <Button icon={<MoreOutlined />} aria-label="标注工作台操作" />
+                <Button
+                  icon={<MoreOutlined />}
+                  aria-label={t('Annotation workspace actions')}
+                />
               </Dropdown>
             )}
           </>
@@ -357,7 +379,7 @@ function AnnotationSessionPage() {
         onBlockingDialogChange={setBlockingDialogOpen}
       />
       <Modal
-        title="更新对象存储连接"
+        title={t('Update object storage connection')}
         open={!!editingSource}
         onCancel={() => setEditingSource(undefined)}
         destroyOnClose

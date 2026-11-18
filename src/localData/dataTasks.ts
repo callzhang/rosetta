@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   DataRecord,
   PublicAnnotationInput,
@@ -11,11 +12,12 @@ import { getRecordOperators } from './recordPreprocessing';
 
 export function tasksFromInput(
   input: PublicAnnotationInput,
-  fallback = '导入数据',
+  fallback = t('Import data'),
   description = '',
 ): NewTask[] {
   const records = sessionRecords(input);
-  if (!records.length) throw new Error('文件中没有可创建的数据');
+  if (!records.length)
+    throw new Error(t('The file contains no data that can be imported'));
   return records.map((record, index) => ({
     name: recordName(
       record,
@@ -35,7 +37,11 @@ export function inputsFromJSON(
   if (/\.jsonl$/i.test(name)) {
     return recordsFromJSONLines(text).map((record, index) => {
       if (!kindFromRecord(record))
-        throw new Error(`JSONL 第 ${index + 1} 条缺少有效的数据类型`);
+        throw new Error(
+          t('JSONL record {{v0}} is missing a valid data type', {
+            v0: index + 1,
+          }),
+        );
       return {
         taskParams: {
           type: 'multiple',
@@ -49,13 +55,15 @@ export function inputsFromJSON(
   try {
     input = JSON.parse(text);
   } catch {
-    throw new Error('请输入有效的 PublicAnnotationInput JSON');
+    throw new Error(t('Enter valid PublicAnnotationInput JSON'));
   }
   if (
     !input?.taskParams ||
     !['include', 'multiple'].includes(input.taskParams.type)
   )
-    throw new Error('JSON 需要包含有效的 PublicAnnotationInput.taskParams');
+    throw new Error(
+      t('JSON must contain valid PublicAnnotationInput.taskParams'),
+    );
   return [input];
 }
 
@@ -66,7 +74,9 @@ export function recordsFromJSONLines(text: string): DataRecord[] {
     try {
       value = JSON.parse(line);
     } catch {
-      throw new Error(`JSONL 第 ${index + 1} 行不是有效 JSON`);
+      throw new Error(
+        t('JSONL line {{v0}} is not valid JSON', { v0: index + 1 }),
+      );
     }
     if (
       !value ||
@@ -74,7 +84,9 @@ export function recordsFromJSONLines(text: string): DataRecord[] {
       !('attachmentType' in value) ||
       typeof value.attachmentType !== 'string'
     )
-      throw new Error(`JSONL 第 ${index + 1} 行缺少有效的数据类型`);
+      throw new Error(
+        t('JSONL line {{v0}} is missing a valid data type', { v0: index + 1 }),
+      );
     return [value as DataRecord];
   });
 }

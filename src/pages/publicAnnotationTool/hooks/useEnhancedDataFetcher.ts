@@ -1,7 +1,7 @@
+import { t } from '../../../i18n';
 import { fetchResourceURL, message } from '@stardustai/annotation-client';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { useRequest } from 'ahooks';
-import i18next from 'i18next';
 import { useCallback, useEffect, useRef } from 'react';
 import { downloadAnnotationInput } from '../../../cache/download';
 import { listCachedInputs, loadCachedInput } from '../../../cache/storage';
@@ -49,7 +49,7 @@ export function useEnhancedDataFetcher(
       manual: true,
       onSuccess: onLoaded,
       onError: (error) =>
-        message.error(`${i18next.t('数据加载失败')}: ${error.message}`),
+        message.error(`${t('Failed to load data')}: ${error.message}`),
     },
   );
   const cancelDataLoad = useCallback(() => {

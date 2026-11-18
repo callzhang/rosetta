@@ -1,8 +1,9 @@
+import { useLanguage, t } from '../i18n';
 import type {
   RosettaAnnotationHandle,
   RosettaAnnotationProps,
 } from '@stardustai/annotation-client';
-import { RosettaAnnotation } from '@stardustai/annotation-client';
+import { RosettaAnnotation } from '../annotationService';
 import type { Ref } from 'react';
 import { useEffect, useState } from 'react';
 import CloudConnectionForm from '../objectStorage/CloudConnectionForm';
@@ -21,6 +22,7 @@ export default function AnnotationWorkspace({
   sources: StorageSource[];
   editorRef?: Ref<RosettaAnnotationHandle>;
 }) {
+  useLanguage();
   const [, setRevision] = useState(0);
   useEffect(
     () => subscribeConnections(() => setRevision((value) => value + 1)),
@@ -31,8 +33,14 @@ export default function AnnotationWorkspace({
     return (
       <div className="cloud-access-page">
         <div className="cloud-access-form">
-          <h2>连接标注数据所在的对象存储</h2>
-          <p>选择数据源，或填写该 Bucket 的访问凭证。</p>
+          <h2>
+            {t('Connect to the object storage containing your annotation data')}
+          </h2>
+          <p>
+            {t(
+              'Select a data source or enter access credentials for this bucket.',
+            )}
+          </p>
           <CloudConnectionForm
             key={`${missing[0].provider}:${missing[0].bucket}`}
             initial={{

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { DataRecord } from '@stardustai/annotation-client';
 
 export type LocalFile = { path: string; file: File };
@@ -27,7 +28,7 @@ export function normalizePath(path: string) {
       (part) => part === '..' || part === '.' || part.includes('\0'),
     )
   )
-    throw new Error('文件路径不合法');
+    throw new Error(t('Invalid file path'));
   return segments.join('/');
 }
 export function fileKind(path: string): DataKind | undefined {
@@ -64,12 +65,18 @@ export function buildLocalImport(
           .some((p) => p.startsWith('.') || p === '__MACOSX'),
     )
     .map((entry) => ({ ...entry, path: normalizePath(entry.path) }));
-  if (!files.length) throw new Error('没有可导入的文件');
+  if (!files.length) throw new Error(t('No files to import'));
   for (const entry of files) {
-    if (seen.has(entry.path)) throw new Error(`文件路径重复：${entry.path}`);
-    if (!entry.file.size) throw new Error(`文件为空：${entry.path}`);
+    if (seen.has(entry.path))
+      throw new Error(t('Duplicate file path: {{v0}}', { v0: entry.path }));
+    if (!entry.file.size)
+      throw new Error(t('The file is empty: {{v0}}', { v0: entry.path }));
     if (fileKind(entry.path) !== kind)
-      throw new Error(`文件格式与所选数据类型不符：${entry.path}`);
+      throw new Error(
+        t('The file format does not match the selected data type: {{v0}}', {
+          v0: entry.path,
+        }),
+      );
     seen.add(entry.path);
   }
   files.sort((a, b) => sort.compare(a.path, b.path));

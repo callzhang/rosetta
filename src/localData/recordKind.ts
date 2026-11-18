@@ -1,12 +1,23 @@
+import { t } from '../i18n';
 import type { DataRecord } from '@stardustai/annotation-client';
 import type { DataKind } from './files';
 
 export const dataKindLabels: Record<DataKind, string> = {
-  pointcloud: '点云',
-  image: '图片',
-  audio: '音频',
-  video: '视频',
-  text: '文本/文档',
+  get pointcloud() {
+    return t('Point cloud');
+  },
+  get image() {
+    return t('Image');
+  },
+  get audio() {
+    return t('Audio');
+  },
+  get video() {
+    return t('Video');
+  },
+  get text() {
+    return t('Text / document');
+  },
 };
 
 export function kindFromRecord(record?: DataRecord): DataKind | undefined {

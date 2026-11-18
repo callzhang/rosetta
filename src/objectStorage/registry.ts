@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { createStorageClient } from './adapters';
 import {
   normalizeConnection,
@@ -72,13 +73,14 @@ export function missingConnections(sources: StorageSource[]) {
 }
 export async function resolveCloudResource(url: string) {
   const source = parseCloudURL(url);
-  if (!source) throw new Error('对象存储路径不正确');
+  if (!source) throw new Error(t('Invalid object storage path'));
   const value = activeConnectionFor(source);
   if (!value)
     throw new Error(
-      `请先连接 ${source.provider.toUpperCase()} 的 ${
-        source.bucket
-      }，以读取云端文件。`,
+      t('Connect to {{v1}} on {{v0}} first to read cloud files.', {
+        v0: source.provider.toUpperCase(),
+        v1: source.bucket,
+      }),
     );
   return value.client.signedURL(source.key);
 }

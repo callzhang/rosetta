@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import type { DBSchema } from 'idb';
 import { openDB } from 'idb';
@@ -132,7 +133,7 @@ export const database = () =>
                 name:
                   records.length === 1
                     ? task.name
-                    : recordName(records[i], `数据 ${i + 1}`),
+                    : recordName(records[i], t('Data {{v0}}', { v0: i + 1 })),
                 input: filterTaskInput(task.input, [i]),
                 submittedIndices: submitted ? [0] : [],
                 lastSavedAt:
@@ -178,7 +179,9 @@ export const database = () =>
           /* already aborted */
         }
         console.error(
-          '任务数据升级未完成，原数据已保留',
+          t(
+            'The task data migration did not complete. The original data has been preserved',
+          ),
           error instanceof Error ? error.name : 'UnknownError',
         );
       }

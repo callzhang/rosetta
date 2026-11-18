@@ -1,8 +1,10 @@
+import { useLanguage, t } from '../../i18n';
 import { Progress, Tag } from 'antd';
 import type { SessionSummary, TaskStatus } from '../../localData/sessionInfo';
 import { taskStatusLabels } from '../../localData/sessionInfo';
 
 export function TaskStatusTag({ status }: { status: TaskStatus }) {
+  useLanguage();
   const colors: Record<TaskStatus, string> = {
     draft: 'default',
     pending: 'default',
@@ -17,14 +19,26 @@ export function TaskProgress({
 }: {
   task: Pick<SessionSummary, 'count' | 'submittedCount' | 'legacyProgress'>;
 }) {
+  useLanguage();
   if (!task.count)
-    return <span className="task-secondary-text">等待导入数据</span>;
+    return (
+      <span className="task-secondary-text">
+        {t('Waiting for data import')}
+      </span>
+    );
   if (task.legacyProgress)
     return (
-      <span title="该任务的提交进度尚未确认，重新提交后更新。">
+      <span
+        title={t(
+          'Submission progress for this task is unconfirmed. Submit again to update it.',
+        )}
+      >
         {task.submittedCount
-          ? `${task.submittedCount} / ${task.count} 条已确认`
-          : '已有历史结果'}
+          ? t('{{v0}} / {{v1}} records confirmed', {
+              v0: task.submittedCount,
+              v1: task.count,
+            })
+          : t('Previous results available')}
       </span>
     );
   return (

@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../i18n';
 import { Button } from '@stardustai/annotation-client';
 import { Alert, Checkbox, Form, Input, Popconfirm, Select } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -42,6 +43,7 @@ export default function CloudConnectionForm({
   onBusyChange?: (busy: boolean) => void;
   onConnected?: (value: ConnectedStorage) => void;
 }) {
+  useLanguage();
   const [form] = Form.useForm<
     StorageConnection & { connectionName?: string; remember: boolean }
   >();
@@ -202,9 +204,12 @@ export default function CloudConnectionForm({
           if (current === request.current)
             setError(
               manage
-                ? (error as Error).message || '保存数据源失败，请重试'
+                ? (error as Error).message ||
+                    t('Failed to save the data source. Try again')
                 : saving
-                ? '连接成功，但保存到本机失败。请检查浏览器可用空间，或取消“保存连接到本机”后重试。'
+                ? t(
+                    'Connected, but saving locally failed. Check browser storage or clear “Save connection on this device” and try again.',
+                  )
                 : storageError(error),
             );
         } finally {
@@ -214,13 +219,13 @@ export default function CloudConnectionForm({
     >
       {!manage && showSavedConnections && saved.length > 0 && (
         <div className="cloud-saved-connection">
-          <span>已保存连接</span>
+          <span>{t('Saved connections')}</span>
           <Select
-            aria-label="已保存连接"
+            aria-label={t('Saved connections')}
             value={selectedId}
             disabled={busy}
             allowClear
-            placeholder="选择已保存的连接"
+            placeholder={t('Select a saved connection')}
             options={saved.map((value) => ({
               value: value.id,
               label: `${
@@ -235,7 +240,7 @@ export default function CloudConnectionForm({
           />
           {selectedId && (
             <Popconfirm
-              title="删除本机保存的连接？"
+              title={t('Delete this locally saved connection?')}
               onConfirm={async () => {
                 const value = saved.find((item) => item.id === selectedId);
                 if (!value) return;
@@ -243,11 +248,11 @@ export default function CloudConnectionForm({
                   await deleteSavedConnection(value.connection);
                   selectSaved();
                 } catch {
-                  setError('删除连接失败，请重试。');
+                  setError(t('Failed to delete the connection. Try again.'));
                 }
               }}
             >
-              <Button disabled={busy}>删除连接</Button>
+              <Button disabled={busy}>{t('Delete connection')}</Button>
             </Popconfirm>
           )}
         </div>
@@ -255,14 +260,16 @@ export default function CloudConnectionForm({
       <div className="cloud-connection-fields">
         <Form.Item
           name="connectionName"
-          label={manage ? '数据源名称' : '连接名称（可选）'}
+          label={
+            manage ? t('Data source name') : t('Connection name (optional)')
+          }
           rules={
             manage
               ? [
                   {
                     required: true,
                     whitespace: true,
-                    message: '请输入数据源名称',
+                    message: t('Enter a data source name'),
                   },
                   { max: 100 },
                 ]
@@ -271,13 +278,13 @@ export default function CloudConnectionForm({
         >
           <Input
             disabled={busy}
-            placeholder="例如 训练集 / 测试数据"
+            placeholder={t('For example, training set / test data')}
             maxLength={100}
           />
         </Form.Item>
         <Form.Item
           name="provider"
-          label="对象存储"
+          label={t('Object storage')}
           rules={[{ required: true }]}
         >
           <Select
@@ -302,11 +309,11 @@ export default function CloudConnectionForm({
         <Form.Item
           name="bucket"
           label="Bucket"
-          rules={[{ required: true, message: '请输入 Bucket 名称' }]}
+          rules={[{ required: true, message: t('Enter the bucket name') }]}
         >
           <Input
             disabled={fixedSource || busy}
-            placeholder="例如 my-annotation-data"
+            placeholder={t('For example, my-annotation-data')}
             autoComplete="off"
             spellCheck={false}
           />
@@ -314,7 +321,7 @@ export default function CloudConnectionForm({
         <Form.Item
           name="region"
           label="Region"
-          rules={[{ required: true, message: '请输入 Bucket 所在地域' }]}
+          rules={[{ required: true, message: t('Enter the bucket region') }]}
         >
           <Input
             disabled={busy}
@@ -323,7 +330,10 @@ export default function CloudConnectionForm({
             spellCheck={false}
           />
         </Form.Item>
-        <Form.Item name="endpoint" label="Endpoint（可选，默认按地域生成）">
+        <Form.Item
+          name="endpoint"
+          label={t('Endpoint (optional; generated from the region by default)')}
+        >
           <Input
             disabled={busy}
             placeholder={defaultEndpoint(provider, defaultRegions[provider])}
@@ -334,14 +344,16 @@ export default function CloudConnectionForm({
         <Form.Item
           name="accessKeyId"
           label="AccessKey ID"
-          rules={[{ required: true, message: '请输入 AK' }]}
+          rules={[{ required: true, message: t('Enter the access key ID') }]}
         >
           <Input.Password disabled={busy} autoComplete="off" placeholder="AK" />
         </Form.Item>
         <Form.Item
           name="accessKeySecret"
           label="Secret AccessKey"
-          rules={[{ required: true, message: '请输入 SK' }]}
+          rules={[
+            { required: true, message: t('Enter the secret access key') },
+          ]}
         >
           <Input.Password
             disabled={busy}
@@ -351,18 +363,18 @@ export default function CloudConnectionForm({
         </Form.Item>
         <Form.Item
           name="securityToken"
-          label="Security Token（临时凭证时填写）"
+          label={t('Security token (for temporary credentials)')}
         >
           <Input.Password
             disabled={busy}
             autoComplete="off"
-            placeholder="使用长期 AK/SK 时留空"
+            placeholder={t('Leave blank for permanent access keys')}
           />
         </Form.Item>
-        <Form.Item name="prefix" label="起始目录（可选）">
+        <Form.Item name="prefix" label={t('Starting directory (optional)')}>
           <Input
             disabled={busy}
-            placeholder="例如 dataset/scene-01/"
+            placeholder={t('For example, dataset/scene-01/')}
             autoComplete="off"
             spellCheck={false}
           />
@@ -371,14 +383,20 @@ export default function CloudConnectionForm({
       {!manage && (
         <Form.Item name="remember" valuePropName="checked">
           <Checkbox disabled={busy}>
-            保存连接到本机（包含 AK / SK 和 Token）
+            {t(
+              'Save connection on this device (including access keys and token)',
+            )}
           </Checkbox>
         </Form.Item>
       )}
       <p className="cloud-storage-note">
         {manage
-          ? '连接信息保存在此浏览器。测试连接会检查起始目录的读取权限。'
-          : '保存后可在此浏览器复用。连接需要目录列举、文件读取权限，以及 GET、HEAD 跨域配置。'}
+          ? t(
+              'Connection details are stored in this browser. Testing checks read permission for the starting directory.',
+            )
+          : t(
+              'Saved connections can be reused in this browser. The connection needs list and read permissions, plus GET and HEAD CORS configuration.',
+            )}
       </p>
       {(error || (!manage && showSavedConnections && loadError)) && (
         <Alert
@@ -392,7 +410,7 @@ export default function CloudConnectionForm({
         <Alert
           type="success"
           showIcon
-          message="连接成功，目录可以读取"
+          message={t('Connected. The directory is readable')}
           className="cloud-storage-error"
         />
       )}
@@ -400,15 +418,15 @@ export default function CloudConnectionForm({
         {manage && (
           <>
             <Button disabled={busy} onClick={onCancel}>
-              取消
+              {t('Cancel')}
             </Button>
             <Button disabled={busy} onClick={testConnection}>
-              测试连接
+              {t('Test connection')}
             </Button>
           </>
         )}
         <Button type="primary" htmlType="submit" loading={busy}>
-          {manage ? '保存数据源' : '连接并读取目录'}
+          {manage ? t('Save data source') : t('Connect and read directory')}
         </Button>
       </div>
     </Form>

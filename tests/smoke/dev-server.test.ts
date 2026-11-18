@@ -29,6 +29,6 @@ test('quick-start image, point-cloud and text examples remain locally available'
   assert.equal(pcd.split('DATA ascii\n')[1].trim().split('\n').length, points);
   assert.match(
     await (await get('/examples/entities.txt')).text(),
-    /李明从上海出发/,
+    /Alex traveled from London/,
   );
 });

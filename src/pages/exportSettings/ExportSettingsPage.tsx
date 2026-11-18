@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../i18n';
 import {
   CloudUploadOutlined,
   DeleteOutlined,
@@ -15,6 +16,7 @@ import { useSavedConnections } from '../../objectStorage/useSavedConnections';
 import TaskLayout from '../tasks/TaskLayout';
 
 export default function ExportSettingsPage() {
+  useLanguage();
   const navigate = useNavigate();
   const { settings, loading, error: loadError } = useExportSettings();
   const {
@@ -42,25 +44,31 @@ export default function ExportSettingsPage() {
   }, [settings, form]);
   return (
     <TaskLayout
-      actions={<Button onClick={() => navigate('/tasks')}>返回任务列表</Button>}
+      actions={
+        <Button onClick={() => navigate('/tasks')}>
+          {t('Back to task list')}
+        </Button>
+      }
       footer={
         <>
-          <span className="workspace-footer-note">设置保存在此浏览器</span>
+          <span className="workspace-footer-note">
+            {t('Settings are stored in this browser')}
+          </span>
           <Button
             type="primary"
             loading={busy}
             disabled={loading || !settings}
             onClick={() => form.submit()}
           >
-            保存设置
+            {t('Save settings')}
           </Button>
         </>
       }
     >
       <div className="task-page-heading">
         <div>
-          <h1>导出设置</h1>
-          <p>选择导出方式，填写接收地址。</p>
+          <h1>{t('Export settings')}</h1>
+          <p>{t('Choose an export method and enter the destination.')}</p>
         </div>
       </div>
       {(error || loadError || sourceError) && (
@@ -98,32 +106,34 @@ export default function ExportSettingsPage() {
                     prefix: 'annotation-results/',
                   },
                 });
-                message.success('导出设置已保存');
+                message.success(t('Export settings saved'));
               } catch (error) {
-                setError((error as Error).message || '保存失败，请重试');
+                setError(
+                  (error as Error).message || t('Save failed. Try again'),
+                );
               } finally {
                 setBusy(false);
               }
             }}
           >
             <section className="export-settings-switch">
-              <h2>导出方式</h2>
-              <p>保存后设为默认导出方式。</p>
+              <h2>{t('Export method')}</h2>
+              <p>{t('Use this as the default export method after saving.')}</p>
               <Form.Item name="defaultMethod" initialValue="download">
                 <Segmented
                   block
                   disabled={busy}
-                  aria-label="导出方式"
+                  aria-label={t('Export method')}
                   options={[
                     {
                       value: 'download',
-                      label: '本地下载',
+                      label: t('Local download'),
                       icon: <DownloadOutlined />,
                     },
                     { value: 'api', label: 'API', icon: <LinkOutlined /> },
                     {
                       value: 'storage',
-                      label: '对象存储',
+                      label: t('Object storage'),
                       icon: <CloudUploadOutlined />,
                     },
                   ]}
@@ -133,19 +143,30 @@ export default function ExportSettingsPage() {
             {method === 'download' && (
               <section className="export-settings-section export-settings-local">
                 <DownloadOutlined />
-                <h2>下载标注结果到本机</h2>
-                <p>下载 JSON，包含数据引用、工具配置和已保存结果。</p>
+                <h2>{t('Download annotation results to this device')}</h2>
+                <p>
+                  {t(
+                    'Download JSON containing data references, tool configuration, and saved results.',
+                  )}
+                </p>
               </section>
             )}
             {method === 'api' && (
               <section
                 className="export-settings-section"
-                aria-label="API 导出配置"
+                aria-label={t('API export configuration')}
               >
-                <h2>API 导出</h2>
-                <p>发送 JSON，接口返回 HTTP 2xx 时完成导出。</p>
+                <h2>{t('API export')}</h2>
+                <p>
+                  {t(
+                    'Send JSON. Export completes when the endpoint returns HTTP 2xx.',
+                  )}
+                </p>
                 <div className="export-api-address">
-                  <Form.Item name={['api', 'method']} label="请求方法">
+                  <Form.Item
+                    name={['api', 'method']}
+                    label={t('Request method')}
+                  >
                     <Select
                       options={['POST', 'PUT'].map((value) => ({
                         value,
@@ -155,8 +176,10 @@ export default function ExportSettingsPage() {
                   </Form.Item>
                   <Form.Item
                     name={['api', 'url']}
-                    label="接收地址"
-                    extra="支持 {taskId} 占位符，例如 https://example.com/api/tasks/{taskId}/annotations"
+                    label={t('Destination URL')}
+                    extra={t(
+                      'Supports the {taskId} placeholder, such as https://example.com/api/tasks/{taskId}/annotations',
+                    )}
                   >
                     <Input
                       autoComplete="off"
@@ -166,7 +189,9 @@ export default function ExportSettingsPage() {
                   </Form.Item>
                 </div>
                 <div className="export-headers-label">
-                  请求头（可选，用于 Authorization、X-API-Key 等鉴权）
+                  {t(
+                    'Request headers (optional; for Authorization, X-API-Key, and other authentication)',
+                  )}
                 </div>
                 <Form.List name={['api', 'headers']}>
                   {(fields, { add, remove }) => (
@@ -175,21 +200,21 @@ export default function ExportSettingsPage() {
                         <div className="export-header-row" key={field.key}>
                           <Form.Item name={[field.name, 'name']}>
                             <Input
-                              aria-label="请求头名称"
-                              placeholder="例如 Authorization"
+                              aria-label={t('Header name')}
+                              placeholder={t('For example, Authorization')}
                               autoComplete="off"
                             />
                           </Form.Item>
                           <Form.Item name={[field.name, 'value']}>
                             <Input.Password
-                              aria-label="请求头内容"
-                              placeholder="例如 Bearer token"
+                              aria-label={t('Header value')}
+                              placeholder={t('For example, Bearer token')}
                               autoComplete="new-password"
                             />
                           </Form.Item>
                           <Button
                             icon={<DeleteOutlined />}
-                            aria-label="删除请求头"
+                            aria-label={t('Delete header')}
                             onClick={() => remove(field.name)}
                           />
                         </div>
@@ -198,35 +223,40 @@ export default function ExportSettingsPage() {
                         icon={<PlusOutlined />}
                         onClick={() => add({ name: '', value: '' })}
                       >
-                        添加请求头
+                        {t('Add header')}
                       </Button>
                     </>
                   )}
                 </Form.List>
                 <p className="export-settings-note">
-                  请求体为 PublicAnnotationInput
-                  JSON。接口需允许本站的跨域请求，鉴权请求头保存在本机。
+                  {t(
+                    'The request body is PublicAnnotationInput JSON. The endpoint must allow cross-origin requests from this site. Authentication headers are stored locally.',
+                  )}
                 </p>
               </section>
             )}
             {method === 'storage' && (
               <section
                 className="export-settings-section"
-                aria-label="对象存储导出配置"
+                aria-label={t('Object storage export configuration')}
               >
-                <h2>对象存储导出</h2>
-                <p>选择 OSS、OBS 或 TOS 数据源，上传任务 JSON。</p>
+                <h2>{t('Object storage export')}</h2>
+                <p>
+                  {t(
+                    'Select an OSS, OBS, or TOS data source to upload task JSON.',
+                  )}
+                </p>
                 <Form.Item
                   name={['storage', 'sourceId']}
-                  label="目标数据源"
-                  extra="在“数据源”中管理连接。"
+                  label={t('Destination data source')}
+                  extra={t('Manage connections in Data sources.')}
                 >
                   <Select
                     allowClear
                     showSearch
                     optionFilterProp="label"
                     loading={sourcesLoading}
-                    placeholder="选择数据源"
+                    placeholder={t('Select data source')}
                     options={sources.map((source) => ({
                       value: source.id,
                       label: `${
@@ -249,18 +279,21 @@ export default function ExportSettingsPage() {
                 </Form.Item>
                 <Form.Item
                   name={['storage', 'prefix']}
-                  label="导出目录"
-                  extra="填写 Bucket 内的目录前缀，每次导出生成新文件。"
+                  label={t('Export directory')}
+                  extra={t(
+                    'Enter a directory prefix within the bucket. Each export creates a new file.',
+                  )}
                 >
                   <Input
-                    placeholder="例如 annotation-results/"
+                    placeholder={t('For example, annotation-results/')}
                     autoComplete="off"
                     spellCheck={false}
                   />
                 </Form.Item>
                 <p className="export-settings-note">
-                  目标凭证需允许该目录的 PutObject 上传，Bucket 的 CORS
-                  需允许本站的 PUT 请求。
+                  {t(
+                    'The credentials must allow PutObject uploads to this directory. Bucket CORS must allow PUT requests from this site.',
+                  )}
                 </p>
               </section>
             )}

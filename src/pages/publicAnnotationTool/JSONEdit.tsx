@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n';
 import { json } from '@codemirror/lang-json';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import { atomone } from '@uiw/codemirror-theme-atomone';
@@ -20,6 +21,7 @@ const JsonEditor = forwardRef<
   },
   { value?: string | PublicAnnotationInput; onChange: (v: string) => void }
 >(({ value = '', onChange }, ref) => {
+  useLanguage();
   const [internalValue, setInternalValue] = useState(() => {
     if (typeof value === 'string') {
       return value;

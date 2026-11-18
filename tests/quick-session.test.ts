@@ -217,7 +217,7 @@ test('batch preview transfers local files and task details to the quick editor w
     assert.equal(draft.details.length, 2);
     assert.equal(draft.details[0].description, 'keep');
     assert.ok(stagedFile(String(data.records[0].attachment)));
-    assert.throws(() => takeQuickDraft(id, owner), /临时预览/);
+    assert.throws(() => takeQuickDraft(id, owner), /temporary preview/i);
   } finally {
     releaseStagedImports(owner);
   }

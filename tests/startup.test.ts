@@ -40,6 +40,7 @@ test('the production entry mounts without a development HMR context', async () =
     `,
     reactDOM: `export function createRoot(node) { return { render(tree) { globalThis.state.mounts.push({ node, tree }); } }; }`,
     jsx: `export const Fragment = 'Fragment'; export function jsx(type, props) { return { type, props }; } export const jsxs = jsx;`,
+    i18n: `export const t = (key) => key;`,
     resources: `export function resolveLocalResource() {}`,
     storage: `export async function getLocalFile() {} export async function storeGeneratedFile() {} export async function releaseUnusedImport() {}`,
     page: `export default function Page() { return null; }`,
@@ -51,6 +52,8 @@ test('the production entry mounts without a development HMR context', async () =
     ['react/jsx-runtime', 'jsx'],
     ['./localData/resources', 'resources'],
     ['./localData/storage', 'storage'],
+    ['./LanguageProvider', 'page'],
+    ['./i18n', 'i18n'],
   ]);
   try {
     {
@@ -127,7 +130,7 @@ test('the production entry mounts without a development HMR context', async () =
       assert.equal(state.mounts.length, 1);
       assert.equal(state.mounts[0].node, node);
       assert.ok(state.mounts[0].tree);
-      assert.equal(state.configuration.frameURL, 'http://127.0.0.1:4175/');
+      assert.equal(state.configuration.frameURL, undefined);
       assert.ok(!('beforeExport' in state.configuration));
       assert.ok(!('devtoolsDetection' in state.configuration));
       const routes = [];

@@ -1,5 +1,5 @@
+import { t } from '../../../i18n';
 import { fetchResourceURL, message } from '@stardustai/annotation-client';
-import i18next from 'i18next';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CacheController } from '../../../cache/controller';
 import {
@@ -18,7 +18,7 @@ export function useCacheManager() {
   const { data: saved = [], error } = useLocalQuery(
     'cache',
     listCachedInputs,
-    '无法读取本地缓存',
+    t('Cannot read local cache'),
   );
   const [runtime, setRuntime] = useState<Record<string, CacheItem>>({});
   const [batchProgress, setBatchProgress] = useState<BatchProgress | null>(
@@ -29,13 +29,10 @@ export function useCacheManager() {
   const active = useRef(true);
   const [controller] = useState(
     () =>
-      new CacheController(
-        fetchResourceURL,
-        (item) => {
-          if (active.current)
-            setRuntime((items) => ({ ...items, [item.id]: item }));
-        },
-      ),
+      new CacheController(fetchResourceURL, (item) => {
+        if (active.current)
+          setRuntime((items) => ({ ...items, [item.id]: item }));
+      }),
   );
   useEffect(() => {
     active.current = true;
@@ -103,7 +100,7 @@ export function useCacheManager() {
     items: Array<{ url: string; name: string }>,
   ) {
     if (batch.current) {
-      message.warning(i18next.t('缓存操作进行中，请稍候'));
+      message.warning(t('A cache operation is in progress. Please wait'));
       return;
     }
     const abort = new AbortController();
@@ -121,8 +118,8 @@ export function useCacheManager() {
       }
       if (!abort.signal.aborted && active.current)
         message.success(
-          i18next.t(
-            '批量缓存已完成，成功: {{completed}}, 失败: {{failed}}',
+          t(
+            'Batch caching complete. Succeeded: {{completed}}, failed: {{failed}}',
             progress,
           ),
         );
@@ -135,32 +132,34 @@ export function useCacheManager() {
     const item = cacheItems.find((item) => item.id === id);
     if (!item?.url || item.status === 'caching') return;
     if (await controller.cache(item.url, item.name, id))
-      message.success(`${i18next.t('刷新缓存成功')}: ${item.name}`);
+      message.success(`${t('Cache refreshed')}: ${item.name}`);
   }
   async function deleteCachedData(id: string) {
     try {
-          controller.cancel(id);
+      controller.cancel(id);
       await deleteCachedInput(id);
       removeRuntime(id);
-      message.success(i18next.t('缓存已删除'));
+      message.success(t('Cache deleted'));
       return true;
     } catch (failure) {
       message.error(
-        failure instanceof Error ? failure.message : '删除缓存失败',
+        failure instanceof Error
+          ? failure.message
+          : t('Failed to delete cache'),
       );
       return false;
     }
   }
   async function clearAllCache() {
     try {
-          cancelAllCaching();
+      cancelAllCaching();
       await clearCachedInputs();
       setRuntime({});
-      message.success(i18next.t('所有缓存已清空'));
+      message.success(t('All caches cleared'));
       return true;
     } catch (failure) {
       message.error(
-        failure instanceof Error ? failure.message : '清空缓存失败',
+        failure instanceof Error ? failure.message : t('Failed to clear cache'),
       );
       return false;
     }

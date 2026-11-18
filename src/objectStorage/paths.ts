@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   StorageConnection,
   StorageProvider,
@@ -24,7 +25,7 @@ export function parseCloudURL(value: string) {
       key: match[3].split('/').map(decodeURIComponent).join('/'),
     };
   } catch {
-    throw new Error('对象存储路径编码不正确');
+    throw new Error(t('Invalid object storage path encoding'));
   }
 }
 export const sourceKey = (source: Pick<StorageSource, 'provider' | 'bucket'>) =>
@@ -52,13 +53,13 @@ export function normalizeConnection(
   value: StorageConnection,
 ): StorageConnection {
   if (!['oss', 'obs', 'tos'].includes(value.provider))
-    throw new Error('请选择 OSS、OBS 或 TOS');
+    throw new Error(t('Select OSS, OBS, or TOS'));
   const bucket = value.bucket?.trim();
   const region = value.region?.trim().replace(/^oss-/, '');
   if (!bucket || !/^[a-z0-9][a-z0-9.-]*$/.test(bucket))
-    throw new Error('请填写正确的 Bucket 名称');
+    throw new Error(t('Enter a valid bucket name'));
   if (!region || !/^[a-z0-9-]+$/i.test(region))
-    throw new Error('请填写正确的 Region');
+    throw new Error(t('Enter a valid region'));
   let endpoint: URL;
   try {
     endpoint = new URL(
@@ -68,7 +69,9 @@ export function normalizeConnection(
     );
   } catch {
     throw new Error(
-      'Endpoint 格式不正确，请填写完整的 http:// 或 https:// 服务域名',
+      t(
+        'Invalid endpoint. Enter a complete http:// or https:// service domain',
+      ),
     );
   }
   if (
@@ -80,10 +83,12 @@ export function normalizeConnection(
     endpoint.pathname !== '/'
   )
     throw new Error(
-      'Endpoint 只填写服务域名，例如 https://oss-cn-hangzhou.aliyuncs.com',
+      t(
+        'The endpoint must contain only the service domain, such as https://oss-cn-hangzhou.aliyuncs.com',
+      ),
     );
   if (!value.accessKeyId?.trim() || !value.accessKeySecret?.trim())
-    throw new Error('请填写 AccessKey ID 和 Secret AccessKey');
+    throw new Error(t('Enter the access key ID and secret access key'));
   return {
     provider: value.provider,
     bucket,

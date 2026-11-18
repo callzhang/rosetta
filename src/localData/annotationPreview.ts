@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { PublicAnnotationInput } from '@stardustai/annotation-client';
 import type { DBSchema } from 'idb';
 import { openDB } from 'idb';
@@ -57,7 +58,8 @@ export async function prepareAnnotationPreview(
   quickSession: QuickSessionState,
   cloudSources: StorageSource[],
 ) {
-  if (!sessionRecords(input)[index]) throw new Error('请先选择需要标注的数据');
+  if (!sessionRecords(input)[index])
+    throw new Error(t('Select data to annotate first'));
   const value: AnnotationPreview = {
     id: crypto.randomUUID(),
     input,
@@ -87,7 +89,11 @@ export async function loadAnnotationPreview(id: string) {
   const value = await db.get('previews', id);
   if (!value || value.expiresAt <= Date.now()) {
     if (value) await db.delete('previews', id);
-    throw new Error('临时标注数据已过期，请返回工具配置页重新打开。');
+    throw new Error(
+      t(
+        'The temporary annotation data has expired. Return to tool configuration and open it again.',
+      ),
+    );
   }
   return value;
 }

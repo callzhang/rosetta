@@ -1,14 +1,11 @@
+import { useLanguage, t } from '../i18n';
 import {
   ArrowUpOutlined,
   CloudOutlined,
   FileOutlined,
   FolderOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  message,
-  validateSchema,
-} from '@stardustai/annotation-client';
+import { Button, message, validateSchema } from '@stardustai/annotation-client';
 import { Alert, Checkbox, Input, Modal, Table } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { formatSize } from '../localData/files';
@@ -25,6 +22,7 @@ export default function CloudDataImport({
 }: {
   store: PublicAnnotationToolStore;
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const [connected, setConnected] = useState<ConnectedStorage>();
   const [prefix, setPrefix] = useState('');
@@ -48,7 +46,11 @@ export default function CloudDataImport({
     const next = directoryPrefix(value);
     const revision = ++request.current;
     if (!next.startsWith(connected.source.prefix)) {
-      setError('请在连接时指定的起始目录内选择数据。');
+      setError(
+        t(
+          'Select data within the starting directory specified for this connection.',
+        ),
+      );
       return;
     }
     setBusy(true);
@@ -99,24 +101,28 @@ export default function CloudDataImport({
         if (!check.valid) throw new Error(check.errorMessage);
       }
       if (abort.signal.aborted)
-        throw new DOMException('已取消读取', 'AbortError');
+        throw new DOMException(t('Reading canceled'), 'AbortError');
       store.setRecords(data.records);
       setOpen(false);
       message.success(
-        `已导入 ${data.fileCount} 个云端文件，生成 ${
-          data.records.length
-        } 条数据${
-          data.skippedCount ? `，忽略 ${data.skippedCount} 个非标注文件` : ''
-        }`,
+        t('Imported {{v0}} cloud files and created {{v1}} data items{{v2}}', {
+          v0: data.fileCount,
+          v1: data.records.length,
+          v2: data.skippedCount
+            ? t(', ignored {{v0}} non-annotation files', {
+                v0: data.skippedCount,
+              })
+            : '',
+        }),
       );
     } catch (error) {
       if ((error as Error).name !== 'AbortError')
         setError(
-          (error as Error).message?.startsWith('目录') ||
-            (error as Error).message?.startsWith('对象存储') ||
-            (error as Error).message?.startsWith('当前任务') ||
-            (error as Error).message?.startsWith('任务数据') ||
-            (error as Error).message?.startsWith('本地标注任务')
+          (error as Error).message?.startsWith(t('Directory')) ||
+            (error as Error).message?.startsWith(t('Object storage')) ||
+            (error as Error).message?.startsWith(t('Current task')) ||
+            (error as Error).message?.startsWith(t('Task data')) ||
+            (error as Error).message?.startsWith(t('Local annotation task'))
             ? (error as Error).message
             : storageError(error),
         );
@@ -144,9 +150,9 @@ export default function CloudDataImport({
   return (
     <>
       <div className="flex items-center py-2 font-bold">
-        <span className="mr-4 min-w-16">对象存储:</span>
+        <span className="mr-4 min-w-16">{t('Object storage:')}</span>
         <Button icon={<CloudOutlined />} onClick={() => setOpen(true)}>
-          从对象存储导入
+          {t('Import from object storage')}
         </Button>
         {connected && (
           <span className="cloud-connection-label">
@@ -156,7 +162,7 @@ export default function CloudDataImport({
         )}
       </div>
       <Modal
-        title="从对象存储导入"
+        title={t('Import from object storage')}
         open={open}
         width={920}
         destroyOnClose
@@ -173,7 +179,7 @@ export default function CloudDataImport({
                   importing ? controller.current?.abort() : setOpen(false)
                 }
               >
-                {importing ? '取消读取' : '取消'}
+                {importing ? t('Cancel reading') : t('Cancel')}
               </Button>
               <Button
                 className="ml-2"
@@ -182,7 +188,7 @@ export default function CloudDataImport({
                 disabled={busy || draft !== prefix}
                 onClick={() => importDirectory()}
               >
-                导入并配置标注工具
+                {t('Import and configure annotation tools')}
               </Button>
             </>
           ) : null
@@ -213,7 +219,7 @@ export default function CloudDataImport({
                   setError('');
                 }}
               >
-                更换连接
+                {t('Change connection')}
               </Button>
             </div>
             <div className="cloud-directory-path">
@@ -224,13 +230,15 @@ export default function CloudDataImport({
                 }
                 onClick={() => browse(prefix.replace(/[^/]+\/$/, ''))}
               >
-                上一级
+                {t('Parent directory')}
               </Button>
               <Input
-                aria-label="对象存储目录"
+                aria-label={t('Object storage directory')}
                 value={draft}
                 disabled={importing}
-                placeholder="目录前缀，留空表示 Bucket 根目录"
+                placeholder={t(
+                  'Directory prefix; leave blank for the bucket root',
+                )}
                 onChange={(event) => setDraft(event.target.value)}
                 onPressEnter={() => browse(draft)}
               />
@@ -239,7 +247,7 @@ export default function CloudDataImport({
                 disabled={importing}
                 onClick={() => browse(draft)}
               >
-                打开目录
+                {t('Open directory')}
               </Button>
             </div>
             <Table
@@ -249,10 +257,14 @@ export default function CloudDataImport({
               pagination={false}
               scroll={{ y: 300 }}
               dataSource={rows}
-              locale={{ emptyText: '此目录为空，或没有可列出的文件' }}
+              locale={{
+                emptyText: t(
+                  'This directory is empty or has no files that can be listed',
+                ),
+              }}
               columns={[
                 {
-                  title: '名称',
+                  title: t('Name'),
                   dataIndex: 'name',
                   render: (name, row) =>
                     row.directory ? (
@@ -271,7 +283,7 @@ export default function CloudDataImport({
                     ),
                 },
                 {
-                  title: '大小',
+                  title: t('Size'),
                   width: 110,
                   render: (_, row) =>
                     row.directory ? '—' : formatSize(row.size),
@@ -284,7 +296,7 @@ export default function CloudDataImport({
                 disabled={busy || importing}
                 onClick={() => browse(prefix, true)}
               >
-                加载更多
+                {t('Load more')}
               </Button>
             )}
             <div className="cloud-import-options">
@@ -293,20 +305,28 @@ export default function CloudDataImport({
                 checked={recursive}
                 onChange={(event) => setRecursive(event.target.checked)}
               >
-                包含子目录
+                {t('Include subdirectories')}
               </Checkbox>
               <Checkbox
                 disabled={importing}
                 checked={sequence}
                 onChange={(event) => setSequence(event.target.checked)}
               >
-                点云 / 图片按目录组成连续帧
+                {t(
+                  'Group point clouds / images in each directory into consecutive frames',
+                )}
               </Checkbox>
             </div>
             <p className="cloud-storage-note">
-              选择目录后按需读取云端原始文件，不会预先下载整个目录。多种数据类型请分别进入对应子目录。
+              {t(
+                'Cloud files are read on demand after you select a directory. The entire directory is not downloaded in advance. Import different data types from their respective subdirectories.',
+              )}
             </p>
-            {importing && <p>正在读取目录，已发现 {count} 个文件…</p>}
+            {importing && (
+              <p>
+                {t('Reading directory, found')} {count} {t('files…')}
+              </p>
+            )}
           </>
         )}
         {error && <Alert type="error" showIcon message={error} />}

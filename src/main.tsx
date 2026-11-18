@@ -1,8 +1,9 @@
+import LanguageProvider from './LanguageProvider';
+import { t } from './i18n';
 import {
   BrowserRouter,
   configureRosetta,
   Navigate,
-  RosettaProvider,
   Route,
   Routes,
   useLocation,
@@ -23,7 +24,9 @@ import TaskManagerPage from './pages/tasks/TaskManagerPage';
 import './style.css';
 
 configureRosetta({
-  frameURL: import.meta.env.VITE_ANNOTATION_URL || 'http://127.0.0.1:4175/',
+  frameURL:
+    import.meta.env.VITE_ANNOTATION_URL ||
+    (import.meta.env.PROD ? undefined : 'http://127.0.0.1:4175/'),
   resolveResource: resolveLocalResource,
   readResource: async (url) => {
     if (url.startsWith('local://')) return getLocalFile(url);
@@ -37,7 +40,9 @@ configureRosetta({
     if (address.origin === window.location.origin) {
       const response = await fetch(address);
       if (!response.ok)
-        throw new Error(`资源读取失败：HTTP ${response.status}`);
+        throw new Error(
+          t('Failed to read resource: HTTP {{v0}}', { v0: response.status }),
+        );
       return response.blob();
     }
     return address.href;
@@ -63,8 +68,8 @@ function LegacyTaskRedirect() {
 
 export const applicationRoot = createRoot(document.getElementById('root')!);
 applicationRoot.render(
-  <BrowserRouter>
-    <RosettaProvider>
+  <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <LanguageProvider>
       <Routes>
         <Route path="/" element={<PublicAnnotationTool />} />
         <Route path="/annotationTool" element={<PublicAnnotationTool />} />
@@ -77,6 +82,6 @@ applicationRoot.render(
         <Route path="/exportSettings" element={<ExportSettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </RosettaProvider>
+    </LanguageProvider>
   </BrowserRouter>,
 );

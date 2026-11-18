@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type {
   PublicAnnotationInput,
   RosettaAnnotationDraft,
@@ -56,7 +57,11 @@ export class QuickSession {
       state.sessions.map(async ([key, reference]) => {
         const session = await loadSession(reference.id);
         if (session.contentRevision !== reference.contentRevision)
-          throw new Error('任务数据已更新，请从配置页重新打开标注工作台。');
+          throw new Error(
+            t(
+              'The task data has changed. Reopen the annotation workspace from the configuration page.',
+            ),
+          );
         return [key, session] as const;
       }),
     );
@@ -77,7 +82,7 @@ export class QuickSession {
     index: number,
     recovery = false,
   ) {
-    if (!sessionRecords(input)[index]) throw new Error('没有找到待保存的数据');
+    if (!sessionRecords(input)[index]) throw new Error(t('No data to save'));
     const key = this.key(input, index);
     const previous = this.sessions.get(key);
     const id = previous?.id || crypto.randomUUID();

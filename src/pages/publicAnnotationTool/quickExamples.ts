@@ -1,3 +1,4 @@
+import { t, getLanguage } from '../../i18n';
 import type {
   DataRecord,
   DataRecordType,
@@ -18,39 +19,59 @@ const asset = (name: string) => `${import.meta.env.BASE_URL}examples/${name}`;
 export const quickExamples: QuickExample[] = [
   {
     id: 'image',
-    name: '图片目标标注',
+    get name() {
+      return t('Image object annotation');
+    },
     kind: 'image',
-    description: '在路口场景中标记车辆与行人',
-    tools: '矩形框 / 多边形 / 关键点',
+    get description() {
+      return t('Label vehicles and pedestrians at an intersection');
+    },
+    get tools() {
+      return t('Rectangle / polygon / keypoint');
+    },
     record: () => ({
       attachmentType: 'IMAGE' as DataRecordType.Image,
       attachment: asset('street.svg'),
-      metadata: { title: '路口场景.svg' },
+      metadata: { title: t('intersection.svg') },
     }),
   },
   {
     id: 'pointcloud',
-    name: '3D 点云标注',
+    get name() {
+      return t('3D point cloud annotation');
+    },
     kind: 'pointcloud',
-    description: '旋转点云，为车辆添加 3D 标注',
-    tools: '3D 框 / 折线 / 3D 点',
+    get description() {
+      return t('Rotate the point cloud and add 3D annotations to vehicles');
+    },
+    get tools() {
+      return t('3D box / polyline / 3D point');
+    },
     record: () =>
       ({
         attachmentType: 'POINTCLOUD' as DataRecordType.PointCloud,
         attachment: { url: asset('street.pcd'), name: 'street.pcd' },
-        metadata: { title: '道路点云.pcd' },
+        metadata: { title: t('road-pointcloud.pcd') },
       } as DataRecord),
   },
   {
     id: 'text',
-    name: '文本实体标注',
+    get name() {
+      return t('Text entity annotation');
+    },
     kind: 'text',
-    description: '选择文本，为人物、地点等实体添加标记',
-    tools: '文本选择 / 实体标注',
+    get description() {
+      return t('Select text to label people, places, and other entities');
+    },
+    get tools() {
+      return t('Text selection / entity annotation');
+    },
     record: () => ({
       attachmentType: 'TEXT' as DataRecordType.Text,
-      attachment: asset('entities.txt'),
-      metadata: { title: '出行记录.txt' },
+      attachment: asset(
+        getLanguage() === 'zh-CN' ? 'entities.zh-CN.txt' : 'entities.txt',
+      ),
+      metadata: { title: t('travel-record.txt') },
     }),
   },
 ];

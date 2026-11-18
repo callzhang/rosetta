@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { StorageClient, StorageConnection, StoragePage } from './types';
 
 const expires = 12 * 60 * 60;
@@ -5,7 +6,11 @@ const more = (value: unknown) => value === true || value === 'true';
 
 function nextPage(page: StoragePage, truncated: unknown) {
   if (more(truncated) && !page.nextCursor)
-    throw new Error('对象存储返回了未完成的文件列表，但没有下一页标记');
+    throw new Error(
+      t(
+        'Object storage returned an incomplete file list without a next-page token',
+      ),
+    );
   return page;
 }
 
@@ -92,7 +97,7 @@ export function obsAdapter(client: any, bucket: string): StorageClient {
               )
             )
               reject(
-                Object.assign(new Error('OBS 上传失败'), {
+                Object.assign(new Error(t('OBS upload failed')), {
                   code: response?.CommonMsg?.Code,
                   status: response?.CommonMsg?.Status,
                 }),
@@ -116,7 +121,7 @@ export function obsAdapter(client: any, bucket: string): StorageClient {
             if (error) reject(error);
             else if (response?.CommonMsg?.Status >= 300)
               reject(
-                Object.assign(new Error('OBS 请求失败'), {
+                Object.assign(new Error(t('OBS request failed')), {
                   code: response.CommonMsg.Code,
                   status: response.CommonMsg.Status,
                 }),
@@ -223,8 +228,21 @@ export async function createStorageClient(
 }
 
 export function storageError(error: any) {
-  if (error?.name === 'AbortError') return '已取消读取';
-  if (/^(对象存储返回|对象存储的分页|目录分页)/.test(error?.message || ''))
+  if (error?.name === 'AbortError') return t('Reading canceled');
+  if (
+    [
+      t(
+        'Object storage returned an incomplete file list without a next-page token',
+      ),
+      t(
+        'Object storage returned files outside the selected directory. Reconnect',
+      ),
+      t(
+        'Object storage repeated a pagination token. Reading stopped. Reconnect',
+      ),
+      t('Repeated directory pagination token. Open the directory again'),
+    ].includes(error?.message || '')
+  )
     return error.message;
   const status = Number(
     error?.status || error?.statusCode || error?.response?.status,
@@ -235,12 +253,22 @@ export function storageError(error: any) {
       code,
     )
   )
-    return '临时凭证已过期或无效，请重新连接对象存储。';
+    return t(
+      'Temporary credentials are expired or invalid. Reconnect to object storage.',
+    );
   if (/SignatureDoesNotMatch|SignatureMismatch/i.test(code))
-    return '签名校验失败，请刷新页面后重试；若仍失败，请核对 AK/SK 是否配对、Region 和 Endpoint 是否对应，以及临时凭证的 Token。';
+    return t(
+      'Signature verification failed. Refresh and try again. If the problem persists, verify the access key pair, region, endpoint, and temporary security token.',
+    );
   if (status === 403 || /AccessDenied|InvalidAccessKeyId/i.test(code))
-    return '访问被拒绝，请检查 AK/SK、Region，以及此目录的列举和读取权限。';
+    return t(
+      'Access denied. Check the access keys, region, and list and read permissions for this directory.',
+    );
   if (status === 404 || /NoSuchBucket/i.test(code))
-    return 'Bucket 或文件不存在，请检查 Bucket 和 Endpoint。';
-  return '无法读取对象存储，请检查网络、Endpoint、凭证，以及 Bucket 的 CORS 设置（允许当前站点的 GET、HEAD）。';
+    return t(
+      'The bucket or file does not exist. Check the bucket and endpoint.',
+    );
+  return t(
+    'Cannot read object storage. Check the network, endpoint, credentials, and bucket CORS settings allowing GET and HEAD from this site.',
+  );
 }

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { DataRecord } from '@stardustai/annotation-client';
 
 export interface DataFileNode {
@@ -20,14 +21,16 @@ const decode = (value: string) => {
 };
 
 function resourcePath(url: string, name?: string) {
-  if (/^(data|blob):/.test(url)) return name || '内嵌文件';
+  if (/^(data|blob):/.test(url)) return name || t('Embedded files');
   const local = url.match(/^local:\/\/[^/]+\/(.+)$/);
   if (local) return decode(local[1]);
   try {
     const parsed = new URL(url);
-    return decode(parsed.pathname).replace(/^\/+/, '') || name || '文件';
+    return decode(parsed.pathname).replace(/^\/+/, '') || name || t('Files');
   } catch {
-    return decode(url.split(/[?#]/)[0]).replace(/^\/+/, '') || name || '文件';
+    return (
+      decode(url.split(/[?#]/)[0]).replace(/^\/+/, '') || name || t('Files')
+    );
   }
 }
 
@@ -66,7 +69,10 @@ export function buildFileTree(records: DataRecord[]) {
       typeof record.attachment === 'string' &&
       !isResource(record.attachment)
     ) {
-      resources.set(`inline:${index}`, record.metadata?.title || '文本数据');
+      resources.set(
+        `inline:${index}`,
+        record.metadata?.title || t('Text data'),
+      );
     } else visit(record.attachment, true);
   });
 

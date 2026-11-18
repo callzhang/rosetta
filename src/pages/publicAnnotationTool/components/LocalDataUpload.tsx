@@ -1,3 +1,4 @@
+import { useLanguage, t } from '../../../i18n';
 import {
   FolderOpenOutlined,
   InboxOutlined,
@@ -18,6 +19,7 @@ export default function LocalDataUpload({
 }: {
   store: PublicAnnotationToolStore;
 }) {
+  useLanguage();
   const fileInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
   function pick(files: LocalFile[], folder: boolean) {
@@ -25,9 +27,13 @@ export default function LocalDataUpload({
       const data = stageLocalFiles(store, files, folder);
       store.setRecords(data.records);
       if (data.skipped)
-        message.info(`已跳过 ${data.skipped} 个空文件或不支持的文件`);
+        message.info(
+          t('Skipped {{v0}} empty or unsupported files', { v0: data.skipped }),
+        );
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '无法读取文件');
+      message.error(
+        error instanceof Error ? error.message : t('Cannot read files'),
+      );
     }
   }
   const { collecting, dragging, getRootProps } = useLocalFileDrop({
@@ -40,29 +46,32 @@ export default function LocalDataUpload({
     onError: (error) => message.error(error.message),
   });
   return (
-    <section className="annotation-local-upload" aria-label="上传自己的数据">
+    <section
+      className="annotation-local-upload"
+      aria-label={t('Upload your own data')}
+    >
       <div className="annotation-upload-actions">
-        <span className="annotation-scene-label">本地数据:</span>
+        <span className="annotation-scene-label">{t('Local data:')}</span>
         <Button
           icon={<UploadOutlined />}
           onClick={() => fileInput.current?.click()}
           disabled={collecting}
         >
-          选择文件
+          {t('Select files')}
         </Button>
         <Button
           icon={<FolderOpenOutlined />}
           onClick={() => folderInput.current?.click()}
           disabled={collecting}
         >
-          选择文件夹
+          {t('Select folder')}
         </Button>
         <Typography.Link
           target="_blank"
           rel="noopener noreferrer"
           href="https://docs.morningstar.works/zh-CN/docs/data/data-format"
         >
-          <QuestionCircleOutlined /> 数据准备说明
+          <QuestionCircleOutlined /> {t('Data preparation guide')}
         </Typography.Link>
       </div>
       <div
@@ -70,7 +79,7 @@ export default function LocalDataUpload({
         className={`annotation-file-drop${dragging ? ' is-dragging' : ''}`}
         role="button"
         tabIndex={collecting ? -1 : 0}
-        aria-label="拖动文件到此处开始标注"
+        aria-label={t('Drop files here to start annotating')}
         aria-busy={collecting}
         onClick={() => !collecting && fileInput.current?.click()}
         onKeyDown={(event) => {
@@ -83,9 +92,13 @@ export default function LocalDataUpload({
         <InboxOutlined />
         <div>
           <strong>
-            {collecting ? '正在读取文件…' : '拖动文件到此处开始标注'}
+            {collecting
+              ? t('Reading files…')
+              : t('Drop files here to start annotating')}
           </strong>
-          <span>支持图片、点云、音视频和文本。</span>
+          <span>
+            {t('Supports images, point clouds, audio, video, and text.')}
+          </span>
         </div>
       </div>
       <input

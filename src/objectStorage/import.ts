@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { TaskSplit } from '../localData/batchTasks';
 import { planTaskFiles } from '../localData/batchTasks';
 import { buildResourceRecords, fileKind } from '../localData/files';
@@ -31,9 +32,12 @@ export function abortable<T>(
 ): Promise<T> {
   if (!signal) return promise;
   if (signal.aborted)
-    return Promise.reject(new DOMException('已取消读取', 'AbortError'));
+    return Promise.reject(
+      new DOMException(t('Reading canceled'), 'AbortError'),
+    );
   return new Promise((resolve, reject) => {
-    const abort = () => reject(new DOMException('已取消读取', 'AbortError'));
+    const abort = () =>
+      reject(new DOMException(t('Reading canceled'), 'AbortError'));
     signal.addEventListener('abort', abort, { once: true });
     promise
       .then(resolve, reject)
@@ -55,7 +59,7 @@ export async function listDirectoryObjects(
   let cursor: string | undefined;
   do {
     if (options.signal?.aborted)
-      throw new DOMException('已取消读取', 'AbortError');
+      throw new DOMException(t('Reading canceled'), 'AbortError');
     const page = await abortable(
       client.list({
         prefix,
@@ -66,13 +70,21 @@ export async function listDirectoryObjects(
     );
     for (const object of page.objects) {
       if (!object.key.startsWith(prefix))
-        throw new Error('对象存储返回了所选目录之外的文件，请重新连接');
+        throw new Error(
+          t(
+            'Object storage returned files outside the selected directory. Reconnect',
+          ),
+        );
       if (!object.key.endsWith('/')) objects.set(object.key, object);
     }
     options.onProgress?.(objects.size);
     cursor = page.nextCursor;
     if (cursor && visited.has(cursor))
-      throw new Error('对象存储的分页标记重复，已停止读取，请重新连接');
+      throw new Error(
+        t(
+          'Object storage repeated a pagination token. Reading stopped. Reconnect',
+        ),
+      );
     if (cursor) visited.add(cursor);
   } while (cursor);
   return [...objects.values()];
@@ -94,11 +106,15 @@ export function buildCloudImport(
   const kinds = [...new Set(files.map((object) => fileKind(object.key)!))];
   if (!kinds.length)
     throw new Error(
-      '目录内没有可标注的文件，支持 PCD/PLY、图片、音视频和文本/文档。',
+      t(
+        'The directory contains no supported files. Use PCD/PLY, images, audio, video, or text/documents.',
+      ),
     );
   if (kinds.length > 1)
     throw new Error(
-      '目录包含多种数据类型，请进入对应子目录分别导入；多传感器关联请使用 JSON/JSONL 描述。',
+      t(
+        'The directory contains multiple data types. Import them from separate subdirectories; use JSON/JSONL for multisensor associations.',
+      ),
     );
   const kind = kinds[0];
   const records = buildResourceRecords(
