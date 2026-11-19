@@ -1,0 +1,14 @@
+allowBuilds:
+  esbuild: true
+  '@tailwindcss/oxide': true
+  core-js: false
+  # This Node-only CRC compiler is not used by the browser SDK.
+  tos-crc64-js: false
+
+catalog:
+  axios: 0.35.0
+
+overrides:
+  '@volcengine/tos-sdk>axios': 'catalog:'
+  'axios-adapter-uniapp>axios': 'catalog:'
+  'esdk-obs-browserjs>axios': 'catalog:'

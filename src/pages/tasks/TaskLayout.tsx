@@ -155,7 +155,9 @@ export default function TaskLayout({
           <img src={logo} alt="STARDUST" />
           <span>{t('Standalone annotation tool')}</span>
         </Link>
-        <div className="workspace-nav-label">{t('Workspace')}</div>
+        <div className="workspace-nav-label mt-0 mx-5.5 mb-2.5 text-workspace-muted text-[11px]">
+          {t('Workspace')}
+        </div>
         <nav aria-label={t('Modules')}>
           {item(
             '/',
@@ -183,8 +185,10 @@ export default function TaskLayout({
           )}
         </nav>
         {task && (
-          <div className="workspace-task-menu">
-            <div className="workspace-nav-label">{t('Current task')}</div>
+          <div className="workspace-task-menu mt-6 pt-5.5 border-t border-solid border-t-workspace-border">
+            <div className="workspace-nav-label mt-0 mx-5.5 mb-2.5 text-workspace-muted text-[11px]">
+              {t('Current task')}
+            </div>
             <div className="workspace-current-task" title={task.name}>
               <span>{task.name}</span>
             </div>
@@ -209,7 +213,7 @@ export default function TaskLayout({
               )}
             </nav>
             <Link
-              className="workspace-task-exit"
+              className="workspace-task-exit flex items-center gap-[9px] mt-4 mx-6 mb-0 text-[12px] text-workspace-muted"
               to="/tasks"
               onClick={(event) => follow(event, '/tasks')}
             >
@@ -219,12 +223,12 @@ export default function TaskLayout({
           </div>
         )}
         <div className="workspace-local-status">
-          <span className="workspace-status-dot" />
+          <span className="workspace-status-dot inline-block w-1.5 h-1.5 mr-[7px] rounded-full bg-[#7894b7] align-middle" />
           {t('Local storage')}
           <small>{t('Data is stored in this browser')}</small>
         </div>
       </aside>
-      <div className="workspace-main">
+      <div className="workspace-main flex flex-col flex-1 min-w-0 min-h-0">
         <header className="workspace-topbar">
           <Button
             className="workspace-menu-toggle"

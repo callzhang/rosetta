@@ -73,7 +73,7 @@ export default function TaskManagerPage() {
           <h1>{t('Task management')}</h1>
           <p>{t('Import data, then select a task to start annotating.')}</p>
         </div>
-        <div className="task-heading-actions">
+        <div className="task-heading-actions flex items-center gap-2 flex-wrap">
           <Button
             icon={<PlayCircleOutlined />}
             disabled={!first || !!busy}

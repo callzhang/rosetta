@@ -143,7 +143,7 @@ export default function QuickAnnotationPage({
     });
   }
   return (
-    <div className="cloud-annotation-page annotation-focus-page">
+    <div className="cloud-annotation-page flex flex-col w-full h-full min-h-0 annotation-focus-page">
       <header className="annotation-session-toolbar">
         <LanguageSelect />
         <Button
@@ -161,7 +161,10 @@ export default function QuickAnnotationPage({
           {t('Data')}
           {index + 1} / {records.length}
         </span>
-        <span className="annotation-session-save" role="status">
+        <span
+          className="annotation-session-save ml-auto text-workspace-muted text-[11px]"
+          role="status"
+        >
           {saving
             ? t('Saving…')
             : savedAt

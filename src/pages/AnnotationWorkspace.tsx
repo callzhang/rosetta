@@ -54,7 +54,7 @@ export default function AnnotationWorkspace({
       </div>
     );
   return (
-    <div className="cloud-annotation-editor">
+    <div className="cloud-annotation-editor flex-1 min-h-0 relative">
       <RosettaAnnotation ref={editorRef} {...props} />
     </div>
   );

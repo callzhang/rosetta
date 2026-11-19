@@ -69,13 +69,13 @@ In the import window:
 
 Supported local extensions:
 
-| Data | Extensions |
-| --- | --- |
-| Images | `.png`, `.jpg`, `.jpeg`, `.bmp`, `.webp` |
-| Point clouds | `.pcd`, `.ply` |
-| Audio | `.mp3`, `.wav`, `.ogg`, `.m4a` |
-| Video | `.mp4`, `.webm`, `.mov` |
-| Text and documents | `.txt`, `.md`, `.html`, `.pdf`, `.docx` |
+| Data               | Extensions                               |
+| ------------------ | ---------------------------------------- |
+| Images             | `.png`, `.jpg`, `.jpeg`, `.bmp`, `.webp` |
+| Point clouds       | `.pcd`, `.ply`                           |
+| Audio              | `.mp3`, `.wav`, `.ogg`, `.m4a`           |
+| Video              | `.mp4`, `.webm`, `.mov`                  |
+| Text and documents | `.txt`, `.md`, `.html`, `.pdf`, `.docx`  |
 
 An accepted extension does not guarantee that every browser can decode that file's codec or document contents. Unsupported, hidden, and empty files are listed as ignored during import. Local SVG uploads are not accepted; the built-in image example uses its own bundled SVG reference.
 
@@ -101,11 +101,11 @@ Open **Export settings**, choose a destination, and save the settings. Then retu
 
 ![API export settings](docs/images/06-export-en.jpg)
 
-| Method | What to configure | What happens |
-| --- | --- | --- |
-| Local download | No destination required | A JSON file downloads to your device. |
-| API | A complete HTTP(S) URL, POST or PUT, and any authentication headers | The app sends `PublicAnnotationInput` JSON. A 2xx response confirms delivery. |
-| Object storage | A saved OSS, OBS, or TOS data source and a directory prefix | The app uploads task JSON with a new filename. |
+| Method         | What to configure                                                   | What happens                                                                  |
+| -------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Local download | No destination required                                             | A JSON file downloads to your device.                                         |
+| API            | A complete HTTP(S) URL, POST or PUT, and any authentication headers | The app sends `PublicAnnotationInput` JSON. A 2xx response confirms delivery. |
+| Object storage | A saved OSS, OBS, or TOS data source and a directory prefix         | The app uploads task JSON with a new filename.                                |
 
 API URLs support `{taskId}`, for example `https://example.com/api/tasks/{taskId}/annotations`. Add `Authorization` or other headers if your receiver requires them. The receiver must allow requests from this site's origin through CORS.
 
@@ -125,14 +125,14 @@ The credentials need list and read access. Bucket CORS must allow GET and HEAD f
 
 ## Run the frontend locally
 
-Install Node.js 22.13+ on the 22.x release line, or Node.js 24+.
+Install Node.js 22.13+ on the 22.x release line, or Node.js 24+, and [pnpm 12.21.0](https://pnpm.io/installation). The package manager version is pinned in `package.json`.
 
 ```sh
 git clone https://github.com/callzhang/rosetta.git
 cd rosetta
-npm ci
+pnpm install --frozen-lockfile
 cp .env.example .env.local
-npm run dev
+pnpm run dev
 ```
 
 Open [http://127.0.0.1:4174](http://127.0.0.1:4174). If you have an annotation service, set its address in `.env.local`:
@@ -158,30 +158,32 @@ The workflow handles the `/repository/` base path and direct links to app routes
 
 ## When something does not open
 
-| What you see | What to check |
-| --- | --- |
-| “Annotation service is not connected” | Set `VITE_ANNOTATION_URL` and rebuild the site after the service is deployed. |
-| A connection error inside the editor | Check the service address, HTTPS, and the service's allowed host origins. |
-| The annotation tab does not open | Allow pop-ups for this site, then choose Start annotating again. |
-| “Local file is missing” | Reimport the file in the same browser and site. Check whether browser data was cleared. |
-| An empty batch import | Check the supported extensions above and whether the files contain data. |
-| Object storage access is denied | Check the bucket, region, credential expiry, directory permissions, and CORS. |
-| An export has no new annotations | Save in the editor first, then export the saved task. |
-| Email sign-in fails in an iframe | Ask the administrator to check the API, SMTP, allowed origins, and browser cookie policy. |
+| What you see                          | What to check                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| “Annotation service is not connected” | Set `VITE_ANNOTATION_URL` and rebuild the site after the service is deployed.             |
+| A connection error inside the editor  | Check the service address, HTTPS, and the service's allowed host origins.                 |
+| The annotation tab does not open      | Allow pop-ups for this site, then choose Start annotating again.                          |
+| “Local file is missing”               | Reimport the file in the same browser and site. Check whether browser data was cleared.   |
+| An empty batch import                 | Check the supported extensions above and whether the files contain data.                  |
+| Object storage access is denied       | Check the bucket, region, credential expiry, directory permissions, and CORS.             |
+| An export has no new annotations      | Save in the editor first, then export the saved task.                                     |
+| Email sign-in fails in an iframe      | Ask the administrator to check the API, SMTP, allowed origins, and browser cookie policy. |
 
 ## Development
 
 ```sh
-npm run typecheck
-npm test
-npm run test:render
-npm run build
+pnpm run typecheck
+pnpm test
+pnpm run test:render
+pnpm run build
 ```
 
-Build output is written to `dist/`. With a local development server running, `npm run test:server` checks the entry point and example files.
+Build output is written to `dist/`. With a local development server running, `pnpm run test:server` checks the entry point and example files.
 
 UI translations use English source messages in `src/messages.ts`. [Iframe integration](docs/iframe-integration.md) describes initial and live language control. The public iframe client archive is included in `vendor/`.
 
-The OBS and TOS SDKs use axios 0.35.0 through scoped npm overrides. TOS still imports the removed `createError` factory; the Vite alias in `vite.config.ts` supplies that factory using the public `AxiosError` type. The storage transport test runs both real browser SDKs against a local HTTP server to check signed requests, pagination, JSON uploads, and access errors. Keep this alias when updating axios until TOS removes its legacy import.
+The OBS and TOS SDKs use axios 0.35.0 through scoped pnpm overrides in `pnpm-workspace.yaml`. TOS still imports the removed `createError` factory; the Vite alias in `vite.config.ts` supplies that factory using the public `AxiosError` type. The storage transport test runs both real browser SDKs against a local HTTP server to check signed requests, pagination, JSON uploads, and access errors. Keep this alias when updating axios until TOS removes its legacy import.
 
 The screenshots in this guide were captured from the running workspace and annotation service using the included example data. [Capture notes](docs/images/README.md) list the views and samples.
+
+Development libraries and implementation boundaries are listed in [the architecture notes](docs/architecture.md).

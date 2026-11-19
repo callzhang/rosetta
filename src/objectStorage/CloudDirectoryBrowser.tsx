@@ -135,7 +135,7 @@ export default function CloudDirectoryBrowser({
   ];
   return (
     <div className="cloud-directory-browser">
-      <div className="cloud-directory-heading">
+      <div className="cloud-directory-heading flex items-center justify-between mb-4 text-[13px]">
         <span>
           {connected.source.provider.toUpperCase()} · {connected.source.bucket}
         </span>
@@ -151,7 +151,7 @@ export default function CloudDirectoryBrowser({
           {t('Change data source')}
         </Button>
       </div>
-      <div className="cloud-directory-path">
+      <div className="cloud-directory-path flex items-center gap-2 mb-3">
         <Button
           icon={<ArrowUpOutlined />}
           disabled={disabled || busy || prefix === connected.source.prefix}
@@ -216,7 +216,7 @@ export default function CloudDirectoryBrowser({
       />
       {page.nextCursor && (
         <Button
-          className="cloud-load-more"
+          className="cloud-load-more mt-3"
           disabled={disabled || busy}
           onClick={() => browse(prefix, true)}
         >

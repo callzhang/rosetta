@@ -56,7 +56,7 @@ export default observer(function SceneSelect({
         <div className="annotation-scene-row">
           <span className="annotation-scene-label">{t('Scene type:')}</span>
           <div
-            className="annotation-scene-options"
+            className="annotation-scene-options flex flex-wrap gap-y-1.5 gap-x-2 min-w-0"
             role="group"
             aria-label={t('Scene type')}
           >
@@ -106,7 +106,7 @@ export default observer(function SceneSelect({
           <div className="annotation-scene-row">
             <span className="annotation-scene-label">{t('Example data:')}</span>
             <div
-              className="annotation-scene-options"
+              className="annotation-scene-options flex flex-wrap gap-y-1.5 gap-x-2 min-w-0"
               role="group"
               aria-label={t('Default example data')}
             >
@@ -134,7 +134,7 @@ export default observer(function SceneSelect({
               {t('Typical scenes:')}
             </span>
             <div
-              className="annotation-scene-options"
+              className="annotation-scene-options flex flex-wrap gap-y-1.5 gap-x-2 min-w-0"
               role="group"
               aria-label={t('Typical scenes')}
             >

@@ -155,7 +155,7 @@ export default function CloudDataImport({
           {t('Import from object storage')}
         </Button>
         {connected && (
-          <span className="cloud-connection-label">
+          <span className="cloud-connection-label ml-3 text-[var(--ant-color-text-secondary,_#92969e)] text-[12px] font-normal">
             {connected.source.provider.toUpperCase()} ·{' '}
             {connected.source.bucket}
           </span>
@@ -206,7 +206,7 @@ export default function CloudDataImport({
           />
         ) : (
           <>
-            <div className="cloud-directory-heading">
+            <div className="cloud-directory-heading flex items-center justify-between mb-4 text-[13px]">
               <span>
                 {connected.source.provider.toUpperCase()} ·{' '}
                 {connected.source.bucket}
@@ -222,7 +222,7 @@ export default function CloudDataImport({
                 {t('Change connection')}
               </Button>
             </div>
-            <div className="cloud-directory-path">
+            <div className="cloud-directory-path flex items-center gap-2 mb-3">
               <Button
                 icon={<ArrowUpOutlined />}
                 disabled={
@@ -292,14 +292,14 @@ export default function CloudDataImport({
             />
             {page.nextCursor && (
               <Button
-                className="cloud-load-more"
+                className="cloud-load-more mt-3"
                 disabled={busy || importing}
                 onClick={() => browse(prefix, true)}
               >
                 {t('Load more')}
               </Button>
             )}
-            <div className="cloud-import-options">
+            <div className="cloud-import-options flex flex-wrap gap-y-2 gap-x-5 mt-4">
               <Checkbox
                 disabled={importing}
                 checked={recursive}
@@ -317,7 +317,7 @@ export default function CloudDataImport({
                 )}
               </Checkbox>
             </div>
-            <p className="cloud-storage-note">
+            <p className="cloud-storage-note text-[var(--ant-color-text-tertiary,_#8a8a8a)] text-[12px] leading-[1.8] mt-1 mx-0 mb-4 font-normal">
               {t(
                 'Cloud files are read on demand after you select a directory. The entire directory is not downloaded in advance. Import different data types from their respective subdirectories.',
               )}

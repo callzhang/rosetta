@@ -69,7 +69,7 @@ export default function CloudSourcePicker({
 
   if (loading)
     return (
-      <div className="task-loading">
+      <div className="task-loading flex items-center justify-center min-h-60 p-8">
         <Spin />
       </div>
     );

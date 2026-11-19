@@ -80,13 +80,13 @@ export default function ExportSettingsPage() {
         />
       )}
       {loading ? (
-        <div className="task-loading">
+        <div className="task-loading flex items-center justify-center min-h-60 p-8">
           <Spin />
         </div>
       ) : (
         settings && (
           <Form
-            className="export-settings-form"
+            className="export-settings-form max-w-250 border border-solid border-workspace-border rounded-md bg-workspace-surface"
             layout="vertical"
             form={form}
             disabled={busy}
@@ -188,7 +188,7 @@ export default function ExportSettingsPage() {
                     />
                   </Form.Item>
                 </div>
-                <div className="export-headers-label">
+                <div className="export-headers-label text-[12px] mb-3">
                   {t(
                     'Request headers (optional; for Authorization, X-API-Key, and other authentication)',
                   )}

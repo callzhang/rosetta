@@ -389,7 +389,7 @@ export default function CloudConnectionForm({
           </Checkbox>
         </Form.Item>
       )}
-      <p className="cloud-storage-note">
+      <p className="cloud-storage-note text-[var(--ant-color-text-tertiary,_#8a8a8a)] text-[12px] leading-[1.8] mt-1 mx-0 mb-4 font-normal">
         {manage
           ? t(
               'Connection details are stored in this browser. Testing checks read permission for the starting directory.',
@@ -403,7 +403,7 @@ export default function CloudConnectionForm({
           type="error"
           showIcon
           message={error || loadError}
-          className="cloud-storage-error"
+          className="cloud-storage-error mb-4"
         />
       )}
       {tested && (
@@ -411,7 +411,7 @@ export default function CloudConnectionForm({
           type="success"
           showIcon
           message={t('Connected. The directory is readable')}
-          className="cloud-storage-error"
+          className="cloud-storage-error mb-4"
         />
       )}
       <div className="cloud-form-actions">

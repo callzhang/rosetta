@@ -137,7 +137,7 @@ export default function ExportTaskModal({
       }
     >
       {!ready && !error && !settingsError && !sourcesError && (
-        <div className="task-loading">
+        <div className="task-loading flex items-center justify-center min-h-60 p-8">
           <Spin />
         </div>
       )}
@@ -157,13 +157,13 @@ export default function ExportTaskModal({
                 : t('{{v0}} submitted', { v0: payload.submittedCount })}
             </Descriptions.Item>
           </Descriptions>
-          <p className="export-content-note">
+          <p className="export-content-note mt-3 mx-0 mb-5 text-[var(--ant-color-text-secondary,_#92969e)] text-[12px] leading-[1.8]">
             {t(
               'Export data references, tool configuration, and saved results. Original files are stored separately.',
             )}
           </p>
           <Radio.Group
-            className="export-method-options"
+            className="export-method-options flex flex-wrap gap-3"
             value={method}
             disabled={busy}
             onChange={(event) => {

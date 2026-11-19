@@ -153,8 +153,8 @@ export default function DataSourcesPage() {
             {
               title: t('Data source name'),
               render: (_, source) => (
-                <div className="task-name-row">
-                  <span className="task-folder-icon">
+                <div className="task-name-row flex items-center gap-3 min-w-0">
+                  <span className="task-folder-icon flex items-center justify-center w-8 h-8.5 shrink-0 rounded-[5px] bg-workspace-secondary text-[#779dd3] text-[17px]">
                     <CloudServerOutlined />
                   </span>
                   <div className="task-name-cell">

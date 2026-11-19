@@ -253,7 +253,10 @@ function AnnotationSessionPage() {
             {Math.max(0, position) + 1} / {ordered.length || 1}
           </span>
         )}
-        <span className="annotation-session-save" role="status">
+        <span
+          className="annotation-session-save ml-auto text-workspace-muted text-[11px]"
+          role="status"
+        >
           {saving
             ? t('Saving results…')
             : savedAt
@@ -344,14 +347,14 @@ function AnnotationSessionPage() {
   if (preview) return <QuickAnnotationPage preview={preview} />;
   if (incoming)
     return (
-      <div className="cloud-annotation-page annotation-focus-page">
+      <div className="cloud-annotation-page flex flex-col w-full h-full min-h-0 annotation-focus-page">
         {header}
         <ImportSharedData input={incoming} />
       </div>
     );
   if (error)
     return (
-      <div className="cloud-annotation-page annotation-focus-page">
+      <div className="cloud-annotation-page flex flex-col w-full h-full min-h-0 annotation-focus-page">
         {header}
         <div className="cloud-access-page">
           <Alert type="error" showIcon message={error} />
@@ -360,13 +363,13 @@ function AnnotationSessionPage() {
     );
   if (!session)
     return (
-      <div className="cloud-annotation-page annotation-focus-page">
+      <div className="cloud-annotation-page flex flex-col w-full h-full min-h-0 annotation-focus-page">
         {header}
         <GlobalSpinner />
       </div>
     );
   return (
-    <div className="cloud-annotation-page annotation-focus-page">
+    <div className="cloud-annotation-page flex flex-col w-full h-full min-h-0 annotation-focus-page">
       {header}
       <AnnotationWorkspace
         taskId={session.id}

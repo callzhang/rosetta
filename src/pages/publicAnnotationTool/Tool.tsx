@@ -69,7 +69,7 @@ const PublicAnnotationOperatorsEditor = observer(
             }}
           />
         ) : (
-          <div className="annotation-tools-empty rounded-lg bg-white dark:bg-gray-900">
+          <div className="annotation-tools-empty flex items-center justify-center h-[var(--annotation-editor-height)] text-[var(--ant-color-text-tertiary,_#8a8a8a)] text-[12px] rounded-lg bg-white dark:bg-gray-900">
             {t('Upload data to automatically match annotation tools')}
           </div>
         )}
@@ -87,7 +87,7 @@ export const PublicAnnotationAlgoEditor = observer(
         onInputChange={(input) => store.setData(input, true)}
       />
     ) : (
-      <div className="annotation-tools-empty rounded-lg bg-white dark:bg-gray-900">
+      <div className="annotation-tools-empty flex items-center justify-center h-[var(--annotation-editor-height)] text-[var(--ant-color-text-tertiary,_#8a8a8a)] text-[12px] rounded-lg bg-white dark:bg-gray-900">
         {t('Upload data to configure algorithm assistance')}
       </div>
     );
@@ -444,7 +444,7 @@ const PublicAnnotationTool = observer(function () {
           role="tabpanel"
           aria-label={t('Tool configuration and data preview')}
         >
-          <div className="annotation-config-toolbar">
+          <div className="annotation-config-toolbar flex flex-wrap items-center justify-between gap-y-2 gap-x-3 mb-3">
             <div
               className="annotation-config-tabs"
               role="tablist"
@@ -481,7 +481,7 @@ const PublicAnnotationTool = observer(function () {
             className="annotation-config-layout"
             data-preview-open={previewOpen}
           >
-            <div className="annotation-config-main">
+            <div className="annotation-config-main min-w-0 h-[var(--annotation-editor-height)] min-h-0">
               {store.format === formatType.OperatorEditor ? (
                 <PublicAnnotationOperatorsEditor store={store} />
               ) : store.format === formatType.AlgoEditor ? (

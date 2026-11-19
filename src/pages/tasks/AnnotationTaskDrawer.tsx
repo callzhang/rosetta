@@ -53,7 +53,7 @@ export default function AnnotationTaskDrawer({
         },
       }}
     >
-      <div className="annotation-task-search">
+      <div className="annotation-task-search shrink-0 p-4 border-b border-solid border-b-[var(--ant-color-border-secondary,_#303030)]">
         <Input.Search
           aria-label={t('Search tasks')}
           placeholder={t('Search by task name or source')}
@@ -64,11 +64,11 @@ export default function AnnotationTaskDrawer({
       </div>
       {error && <Alert type="error" showIcon message={error} />}
       <div
-        className="annotation-task-items"
+        className="annotation-task-items flex-1 min-h-0 overflow-y-auto p-2"
         aria-label={t('Task list content')}
       >
         {loading ? (
-          <div className="task-loading">
+          <div className="task-loading flex items-center justify-center min-h-60 p-8">
             <Spin />
           </div>
         ) : rows.length ? (

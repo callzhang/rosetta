@@ -723,7 +723,7 @@ export default function BatchTaskCreateModal({
         </label>
       )}
       {busy && (
-        <div className="batch-task-progress">
+        <div className="batch-task-progress mt-4 text-[12px]">
           <span>
             {phase === 'reading'
               ? t('Reading directory, found {{v0}} files…', { v0: readCount })

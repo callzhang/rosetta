@@ -34,7 +34,7 @@ export default function TaskDetailPage() {
   if (loading)
     return (
       <TaskLayout>
-        <div className="task-loading">
+        <div className="task-loading flex items-center justify-center min-h-60 p-8">
           <Spin />
         </div>
       </TaskLayout>
@@ -73,7 +73,7 @@ export default function TaskDetailPage() {
               )}
           </p>
         </div>
-        <div className="task-heading-actions">
+        <div className="task-heading-actions flex items-center gap-2 flex-wrap">
           <Button
             icon={<SettingOutlined />}
             onClick={() => navigate(`/annotationTool?task=${task.id}`)}
@@ -134,7 +134,7 @@ export default function TaskDetailPage() {
         <section className="task-list-panel task-data-details">
           <h2>{t('Annotation results')}</h2>
           {result ? (
-            <pre className="task-result-json">
+            <pre className="task-result-json max-h-120 overflow-auto whitespace-pre-wrap wrap-anywhere text-[12px] text-workspace-ink">
               {JSON.stringify(result, null, 2)}
             </pre>
           ) : (

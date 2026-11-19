@@ -57,7 +57,10 @@ export default observer(function DataOverview({
           {t('{{count}} records', { count: records.length })}
         </div>
       )}
-      <div className="data-file-list" ref={listRef}>
+      <div
+        className="data-file-list flex-1 min-h-0 mt-2 mr-1 mb-2 ml-2 overflow-hidden"
+        ref={listRef}
+      >
         {tree.length ? (
           <Tree.DirectoryTree
             key={tree[0].key + count}
@@ -75,7 +78,9 @@ export default observer(function DataOverview({
             treeData={tree.map(fileNode)}
           />
         ) : (
-          <div className="data-files-empty">{t('No files uploaded yet')}</div>
+          <div className="data-files-empty py-3 px-1 text-[var(--ant-color-text-tertiary,_#8a8a8a)]">
+            {t('No files uploaded yet')}
+          </div>
         )}
       </div>
     </aside>

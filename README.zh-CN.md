@@ -40,7 +40,7 @@
 
 进入标注页后，左侧是绘制工具，中间是数据，右侧是对象列表。
 
-在图片示例里，选择 **2D矩形框**，或者按 **2**，为车辆画框。用 **选中** 或 **1** 选择对象，再调整位置和边界。这个示例中的多边形和点分别对应 **3**、**4**。工具旁边显示的数字就是当前配置的快捷键。
+在图片示例里，选择 **2D 矩形框**，或者按 **2**，为车辆画框。用 **选中** 或 **1** 选择对象，再调整位置和边界。这个示例中的多边形和点分别对应 **3**、**4**。工具旁边显示的数字就是当前配置的快捷键。
 
 编辑完成后，点击右下角的 **保存**。配置页的 **保存到任务** 用于创建可反复打开的任务，编辑器里的 **保存** 才会保存当前标注结果。
 
@@ -69,13 +69,13 @@
 
 本地导入支持以下扩展名：
 
-| 数据类型 | 扩展名 |
-| --- | --- |
-| 图片 | `.png`、`.jpg`、`.jpeg`、`.bmp`、`.webp` |
-| 点云 | `.pcd`、`.ply` |
-| 音频 | `.mp3`、`.wav`、`.ogg`、`.m4a` |
-| 视频 | `.mp4`、`.webm`、`.mov` |
-| 文本和文档 | `.txt`、`.md`、`.html`、`.pdf`、`.docx` |
+| 数据类型   | 扩展名                                   |
+| ---------- | ---------------------------------------- |
+| 图片       | `.png`、`.jpg`、`.jpeg`、`.bmp`、`.webp` |
+| 点云       | `.pcd`、`.ply`                           |
+| 音频       | `.mp3`、`.wav`、`.ogg`、`.m4a`           |
+| 视频       | `.mp4`、`.webm`、`.mov`                  |
+| 文本和文档 | `.txt`、`.md`、`.html`、`.pdf`、`.docx`  |
 
 文件扩展名受支持，也可能因为浏览器不支持其中的编码或文档内容而无法预览。导入窗口会列出被忽略的不支持文件、隐藏文件和空文件。本地导入不接受 SVG；内置图片示例使用的是随应用提供的 SVG 引用。
 
@@ -101,11 +101,11 @@
 
 ![API 导出配置](docs/images/06-export-zh.jpg)
 
-| 方式 | 需要填写的配置 | 导出结果 |
-| --- | --- | --- |
-| 本地下载 | 不需要接收地址 | JSON 文件下载到当前设备。 |
-| API | 完整的 HTTP(S) 地址、POST 或 PUT，以及接口需要的鉴权请求头 | 发送 `PublicAnnotationInput` JSON，收到 2xx 响应后确认投递成功。 |
-| 对象存储 | 已保存的 OSS、OBS 或 TOS 数据源，以及目录前缀 | 生成新文件名，把任务 JSON 上传到指定目录。 |
+| 方式     | 需要填写的配置                                             | 导出结果                                                         |
+| -------- | ---------------------------------------------------------- | ---------------------------------------------------------------- |
+| 本地下载 | 不需要接收地址                                             | JSON 文件下载到当前设备。                                        |
+| API      | 完整的 HTTP(S) 地址、POST 或 PUT，以及接口需要的鉴权请求头 | 发送 `PublicAnnotationInput` JSON，收到 2xx 响应后确认投递成功。 |
+| 对象存储 | 已保存的 OSS、OBS 或 TOS 数据源，以及目录前缀              | 生成新文件名，把任务 JSON 上传到指定目录。                       |
 
 API 地址支持 `{taskId}`，例如 `https://example.com/api/tasks/{taskId}/annotations`。接收方需要鉴权时，可以添加 `Authorization` 等请求头；接口还需要通过 CORS 允许本站来源。
 
@@ -127,12 +127,14 @@ API 地址支持 `{taskId}`，例如 `https://example.com/api/tasks/{taskId}/ann
 
 安装 Node.js 22.13 及以上的 22.x 版本，或 Node.js 24 及以上版本。
 
+先安装 [pnpm 12.21.0](https://pnpm.io/installation)。`package.json` 固定了包管理器版本，依赖版本由 `pnpm-lock.yaml` 记录。
+
 ```sh
 git clone https://github.com/callzhang/rosetta.git
 cd rosetta
-npm ci
+pnpm install --frozen-lockfile
 cp .env.example .env.local
-npm run dev
+pnpm run dev
 ```
 
 打开 [http://127.0.0.1:4174](http://127.0.0.1:4174)。已有标注服务时，在 `.env.local` 中设置地址：
@@ -158,30 +160,32 @@ VITE_ANNOTATION_URL=https://annotation.example.com/
 
 ## 常见问题
 
-| 遇到的情况 | 检查方法 |
-| --- | --- |
-| 显示“尚未连接标注服务” | 部署标注服务后，设置 `VITE_ANNOTATION_URL` 并重新构建。 |
-| 编辑器内显示连接错误 | 检查服务地址、HTTPS，以及标注服务允许的宿主来源。 |
-| 点击开始标注没有新页面 | 允许本站弹出窗口后重试。 |
-| 提示本地文件不存在 | 在原来的浏览器和站点中重新导入文件，并检查是否清理过浏览器数据。 |
-| 导入后的清单为空 | 检查扩展名是否受支持，文件是否为空。 |
-| 对象存储访问被拒绝 | 检查 Bucket、Region、凭证有效期、目录权限和 CORS。 |
-| 导出结果里没有刚才的修改 | 先在编辑器中保存，再导出任务。 |
-| iframe 中的邮箱登录失败 | 请管理员检查 API、SMTP、允许的来源和浏览器 Cookie 策略。 |
+| 遇到的情况               | 检查方法                                                         |
+| ------------------------ | ---------------------------------------------------------------- |
+| 显示“尚未连接标注服务”   | 部署标注服务后，设置 `VITE_ANNOTATION_URL` 并重新构建。          |
+| 编辑器内显示连接错误     | 检查服务地址、HTTPS，以及标注服务允许的宿主来源。                |
+| 点击开始标注没有新页面   | 允许本站弹出窗口后重试。                                         |
+| 提示本地文件不存在       | 在原来的浏览器和站点中重新导入文件，并检查是否清理过浏览器数据。 |
+| 导入后的清单为空         | 检查扩展名是否受支持，文件是否为空。                             |
+| 对象存储访问被拒绝       | 检查 Bucket、Region、凭证有效期、目录权限和 CORS。               |
+| 导出结果里没有刚才的修改 | 先在编辑器中保存，再导出任务。                                   |
+| iframe 中的邮箱登录失败  | 请管理员检查 API、SMTP、允许的来源和浏览器 Cookie 策略。         |
 
 ## 开发检查
 
 ```sh
-npm run typecheck
-npm test
-npm run test:render
-npm run build
+pnpm run typecheck
+pnpm test
+pnpm run test:render
+pnpm run build
 ```
 
-构建产物在 `dist/`。本地开发服务运行时，可以用 `npm run test:server` 检查页面入口和示例文件。
+构建产物在 `dist/`。本地开发服务运行时，可以用 `pnpm run test:server` 检查页面入口和示例文件。
 
 界面翻译使用 `src/messages.ts` 中的英文原文作为 key。[iframe 接入说明](docs/iframe-integration.md) 介绍初始化和实时语言控制；公开 iframe 客户端安装包位于 `vendor/`。
 
-OBS 和 TOS SDK 通过定向 npm overrides 使用 axios 0.35.0。TOS 仍引用已删除的 `createError` 工厂，`vite.config.ts` 中的别名用公开的 `AxiosError` 类型补齐了这个接口。存储传输测试会运行两家真实的浏览器 SDK，通过本机 HTTP 服务检查签名请求、分页、JSON 上传和权限错误。TOS 移除旧引用前，更新 axios 时需要保留这个别名。
+OBS 和 TOS SDK 通过`pnpm-workspace.yaml` 中的定向 pnpm overrides 使用 axios 0.35.0。TOS 仍引用已删除的 `createError` 工厂，`vite.config.ts` 中的别名用公开的 `AxiosError` 类型补齐了这个接口。存储传输测试会运行两家真实的浏览器 SDK，通过本机 HTTP 服务检查签名请求、分页、JSON 上传和权限错误。TOS 移除旧引用前，更新 axios 时需要保留这个别名。
 
 本文截图来自实际运行的工作区和标注服务，使用的是项目内置样例。[截图说明](docs/images/README.md) 列出了对应页面和数据。
+
+开发依赖和业务代码边界见[代码组织说明](docs/architecture.zh-CN.md)。
