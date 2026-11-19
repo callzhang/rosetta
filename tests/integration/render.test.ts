@@ -28,6 +28,14 @@ test(
       configFile: false,
       root,
       envDir: false,
+      resolve: {
+        alias: {
+          'axios/lib/core/createError': resolve(
+            root,
+            'src/objectStorage/axiosLegacyError.ts',
+          ),
+        },
+      },
       define: {
         'import.meta.env.VITE_ANNOTATION_URL': JSON.stringify(
           'http://127.0.0.1:4175/',

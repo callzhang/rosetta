@@ -182,4 +182,6 @@ npm run build
 
 界面翻译使用 `src/messages.ts` 中的英文原文作为 key。[iframe 接入说明](docs/iframe-integration.md) 介绍初始化和实时语言控制；公开 iframe 客户端安装包位于 `vendor/`。
 
+OBS 和 TOS SDK 通过定向 npm overrides 使用 axios 0.35.0。TOS 仍引用已删除的 `createError` 工厂，`vite.config.ts` 中的别名用公开的 `AxiosError` 类型补齐了这个接口。存储传输测试会运行两家真实的浏览器 SDK，通过本机 HTTP 服务检查签名请求、分页、JSON 上传和权限错误。TOS 移除旧引用前，更新 axios 时需要保留这个别名。
+
 本文截图来自实际运行的工作区和标注服务，使用的是项目内置样例。[截图说明](docs/images/README.md) 列出了对应页面和数据。

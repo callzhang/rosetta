@@ -182,4 +182,6 @@ Build output is written to `dist/`. With a local development server running, `np
 
 UI translations use English source messages in `src/messages.ts`. [Iframe integration](docs/iframe-integration.md) describes initial and live language control. The public iframe client archive is included in `vendor/`.
 
+The OBS and TOS SDKs use axios 0.35.0 through scoped npm overrides. TOS still imports the removed `createError` factory; the Vite alias in `vite.config.ts` supplies that factory using the public `AxiosError` type. The storage transport test runs both real browser SDKs against a local HTTP server to check signed requests, pagination, JSON uploads, and access errors. Keep this alias when updating axios until TOS removes its legacy import.
+
 The screenshots in this guide were captured from the running workspace and annotation service using the included example data. [Capture notes](docs/images/README.md) list the views and samples.

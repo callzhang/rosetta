@@ -2,9 +2,17 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig(({ mode }) => ({
   base: loadEnv(mode, process.cwd(), 'VITE_').VITE_BASE_PATH || '/',
+  resolve: {
+    alias: {
+      'axios/lib/core/createError': fileURLToPath(
+        new URL('./src/objectStorage/axiosLegacyError.ts', import.meta.url),
+      ),
+    },
+  },
   plugins: [
     react({
       babel: {
